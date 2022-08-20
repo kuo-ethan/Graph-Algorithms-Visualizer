@@ -20,6 +20,9 @@ export function dijkstras(grid, startNode, finishNode, heuristic='') {
   // Begin algorithm
   while (!PQ.is_empty()) {
     const next_up = PQ.pop();
+    if (next_up.isWall) {
+      continue;
+    }
     next_up.isVisited = true;
     visitedNodesInOrder.push(next_up);
     // Return if reached goal
