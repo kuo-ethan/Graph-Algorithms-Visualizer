@@ -2,10 +2,11 @@ import React, {Component} from 'react';
 import Node from './Node/Node';
 import {dijkstras, getNodesInShortestPathOrder} from '../algorithms/dijkstra';
 import './PathfindingVisualizer.css';
-
+import Container from 'react-bootstrap/Container';
+import Navbar from 'react-bootstrap/Navbar';
+import NavDropdown from 'react-bootstrap/NavDropdown';
+import Button from 'react-bootstrap/Button';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import NavbarComp from '../components/NavbarComp';
-
 
 const START_NODE_ROW = 10;
 const START_NODE_COL = 15;
@@ -90,7 +91,24 @@ export default class PathfindingVisualizer extends Component {
 
     return (
       <>
-        <NavbarComp />
+        <Navbar bg="light" expand="lg">
+          <Container>
+            <Button variant='light'>Info</Button>{' '}
+            <Button variant='light'>Clear</Button>{' '}
+            <Button variant='light'>Reset Visualizer</Button>{' '}
+            <Button variant='light' onClick={() => this.visualizeDijkstra()}>Visualize</Button>{' '}
+            <NavDropdown title='Algorithms'>
+                <NavDropdown.Item>Dijkstra's</NavDropdown.Item>
+                <NavDropdown.Item>A* (Euclidean Heuristic)</NavDropdown.Item>
+                <NavDropdown.Item>A* (Manhattan Heuristic)</NavDropdown.Item>
+            </NavDropdown>
+            <NavDropdown title='Speed'>
+                <NavDropdown.Item>Slow</NavDropdown.Item>
+                <NavDropdown.Item>Normal</NavDropdown.Item>
+                <NavDropdown.Item>Fast</NavDropdown.Item>
+            </NavDropdown>
+          </Container>
+        </Navbar>
         <button onClick={() => this.visualizeDijkstra()}>
           Visualize Dijkstra's Algorithm
         </button>
