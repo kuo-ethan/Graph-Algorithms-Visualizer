@@ -1,17 +1,23 @@
 import {PriorityQueue} from './priority_queue';
 
-/* My CS61B version of Dijkstra's that uses a priority queue. 
+/* Dijkstra's algorithm as taught in CS 61B. Uses a priority queue.
+Pass in a heuristic function to run A* algorithm. 
 Returns a list of nodes in order of visitation. */
-export function dijkstras(grid, startNode, finishNode) {
+export function dijkstras(grid, startNode, finishNode, heuristic='') {
   const visitedNodesInOrder = []; // for animation purposes
   const unvisitedNodes = getAllNodes(grid); // DISTANCE and PREVIOUS are initially Infinity and null
   startNode.distance = 0;
   // Set up the priority queue
   const PQ = new PriorityQueue();
   for (const node of unvisitedNodes) {
+    if (!heuristic) { // For Dijkstras
+      node.priority = node.distance;
+    } else { // For A*
+      node.priority = node.distance + HEURISTICS[heuristic](node, finishNode);
+    }
     PQ.insert(node);
   }
-  // Begin Dijkstra's algorithm
+  // Begin algorithm
   while (!PQ.is_empty()) {
     const next_up = PQ.pop();
     next_up.isVisited = true;
@@ -26,6 +32,11 @@ export function dijkstras(grid, startNode, finishNode) {
       const dist = next_up.distance + 1; // NOTE: if weighted, change 1 to 2
       if (dist < neighbor.distance) {
         neighbor.distance = dist;
+        if (!heuristic) { // For Dijkstras
+          neighbor.priority = dist;
+        } else { // For A*
+          neighbor.priority = dist + HEURISTICS[heuristic](neighbor, finishNode);
+        }
         neighbor.previous = next_up;
         PQ.refresh(neighbor);
       }
@@ -64,3 +75,20 @@ export function getNodesInShortestPathOrder(finishNode) {
   }
   return nodesInShortestPathOrder;
 }
+
+// Define heuristic functions and disctionary for A*
+
+/* Euclidean heuristic computes distance with a "birds-eye-view". */
+function euclidean(node, goal) {
+  return Math.sqrt(Math.pow(node.row - goal.row, 2) + Math.pow(node.col - goal.col, 2));
+}
+
+/* Manhattan heuristic compusing distance using the 4 cardinal directions. */
+function manhattan(node, goal) {
+  return Math.abs(node.row - goal.row) + Math.abs(node.col - goal.col);
+}
+
+/* HEURISTICS is a dictionary mapping heuristic name to heuristic function. */
+const HEURISTICS = {};
+HEURISTICS['euclidean'] = euclidean;
+HEURISTICS['manhattan'] = manhattan;

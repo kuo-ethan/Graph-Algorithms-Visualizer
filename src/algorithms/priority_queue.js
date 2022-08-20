@@ -1,5 +1,5 @@
 /* Making my own Priority Queue (min-heap) class for graph nodes. Implemented as an array
-IMPORTANT: Priority is based on distance. */
+IMPORTANT: Priority is based on the PRIORITY attribute of the node. */
 
 export class PriorityQueue {
     constructor() {
@@ -29,7 +29,7 @@ export class PriorityQueue {
         this.bubbleUp(new_index);
     }
 
-    /* Pops off the node with the highest priority, i.e. the smallest distance attribute. */
+    /* Pops off the node with the highest priority, i.e. the smallest priority value. */
     pop() {
         if (this.is_empty()) {
             return null;
@@ -41,7 +41,7 @@ export class PriorityQueue {
     }
 
     /* Refreshes the priority queue to reflect the changed priority value for NODE. 
-    IMPORTANT: It is assumed that NODE's distance has been manually updated beforehand,
+    IMPORTANT: It is assumed that NODE's PRIORITY attribute has been manually updated beforehand,
     and that the only NODE is out-of-date. */
     refresh(node) {
         for (let i = 1; i <= this.size(); i++) {
@@ -112,7 +112,7 @@ export class PriorityQueue {
     /* Bubbles up the node currently at the given INDEX until no longer needed. */
     bubbleUp(index) {
         const parentIndex = this.getParent(index);
-        if (parentIndex !== 0 && this.getNode(index).distance < this.getNode(parentIndex).distance) {
+        if (parentIndex !== 0 && this.getNode(index).priority < this.getNode(parentIndex).priority) {
             this.swap(index, parentIndex);
             this.bubbleUp(parentIndex);
         }
@@ -128,17 +128,17 @@ export class PriorityQueue {
         if (left === null && right === null) { // No children
             return;
         } else if (left === null) { // Only right child exists
-            if (curr.distance > right.distance) {
+            if (curr.priority > right.priority) {
                 this.swap(index, rightIndex);
                 this.bubbleDown(rightIndex);
             }
         } else if (right === null) { // Only left child exists
-            if (curr.distance > left.distance) {
+            if (curr.priority > left.priority) {
                 this.swap(index, leftIndex);
                 this.bubbleDown(leftIndex);
             }
-        } else if (curr.distance > left.distance || curr.distance > right.distance) { // Both children exist, swap needed
-            if (left.distance < right.distance) {
+        } else if (curr.priority > left.priority || curr.priority > right.priority) { // Both children exist, swap needed
+            if (left.priority < right.priority) {
                 this.swap(index, leftIndex);
                 this.bubbleDown(leftIndex);
             } else {
