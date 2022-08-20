@@ -2,9 +2,9 @@ import {PriorityQueue} from './priority_queue';
 
 /* My CS61B version of Dijkstra's that uses a priority queue. 
 Returns a list of nodes in order of visitation. */
-export function my_dijkstras(grid, startNode, finishNode) {
+export function dijkstras(grid, startNode, finishNode) {
   const visitedNodesInOrder = []; // for animation purposes
-  const unvisitedNodes = getAllNodes(grid); // dist and prev are initially Infinity and null
+  const unvisitedNodes = getAllNodes(grid); // DISTANCE and PREVIOUS are initially Infinity and null
   startNode.distance = 0;
   // Set up the priority queue
   const PQ = new PriorityQueue();
@@ -26,7 +26,7 @@ export function my_dijkstras(grid, startNode, finishNode) {
       const dist = next_up.distance + 1; // NOTE: if weighted, change 1 to 2
       if (dist < neighbor.distance) {
         neighbor.distance = dist;
-        neighbor.previousNode = next_up;
+        neighbor.previous = next_up;
         PQ.refresh(neighbor);
       }
     }
@@ -60,7 +60,7 @@ export function getNodesInShortestPathOrder(finishNode) {
   let currentNode = finishNode;
   while (currentNode !== null) {
     nodesInShortestPathOrder.unshift(currentNode);
-    currentNode = currentNode.previousNode;
+    currentNode = currentNode.previous;
   }
   return nodesInShortestPathOrder;
 }
