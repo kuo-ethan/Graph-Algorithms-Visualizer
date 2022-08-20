@@ -23,6 +23,10 @@ export function dijkstras(grid, startNode, finishNode, heuristic='') {
     if (next_up.isWall) {
       continue;
     }
+    // Closest node has infinite distance => trapped
+    if (next_up.distance === Infinity) {
+      return visitedNodesInOrder;
+    }
     next_up.isVisited = true;
     visitedNodesInOrder.push(next_up);
     // Return if reached goal
