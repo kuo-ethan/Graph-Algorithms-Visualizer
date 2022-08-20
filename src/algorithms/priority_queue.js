@@ -1,30 +1,37 @@
-/* Making my own Priority Queue (min-heap) class for graph nodes. Priority is based on distance */
+/* Making my own Priority Queue (min-heap) class for graph nodes. Implemented as an array
+IMPORTANT: Priority is based on distance. */
 
-class PriorityQueue {
+export class PriorityQueue {
     constructor() {
         this.contents = [];
-        this.contents.push(null)
+        this.contents.push(null) // Start indexing from 1 for convenience
     }
+
     // ESSENTIAL METHODS
 
     /* Indicates whether this priority queue is empty or not. */
     is_empty() {
-        return this.size() == 0;
+        return this.size() === 0;
     }
+
     /* Returns the item with the smallest priority value. Does not modify the priority queue. */
     peek() {
+        if (this.is_empty()) {
+            return null;
+        }
         return this.getNode(1);
     }
-    /* Inserts an node into the priority queue. */
-    insert(item) {
+
+    /* Inserts a node into the priority queue. */
+    insert(node) {
         const new_index = this.size() + 1;
-        this.setNode(new_index, item);
+        this.setNode(new_index, node);
         this.bubbleUp(new_index);
     }
 
-    /* Pops off the node with the highest priority, ie the smallest distance attribute. */
+    /* Pops off the node with the highest priority, i.e. the smallest distance attribute. */
     pop() {
-        if (this.size() == 0) {
+        if (this.is_empty()) {
             return null;
         }
         this.swap(1, this.size()); // Swap the first and last node
@@ -33,12 +40,12 @@ class PriorityQueue {
         return min_node;
     }
 
-    /* Updates the DISTANCE attribute for NODE, then refreshes the priority queue to reflect 
-    the changed priority value for NODE. */
-    updatePriority(node, distance) {
-        node.distance = distance;
+    /* Refreshes the priority queue to reflect the changed priority value for NODE. 
+    IMPORTANT: It is assumed that NODE's distance has been manually updated beforehand,
+    and that the only NODE is out-of-date. */
+    refresh(node) {
         for (let i = 1; i <= this.size(); i++) {
-            if (this.getNode(i) == node) {
+            if (this.getNode(i) === node) {
                 this.bubbleUp(i);
                 this.bubbleDown(i);
                 return;
@@ -61,7 +68,7 @@ class PriorityQueue {
         return this.contents[index];
     }
 
-    /* Sets the given INDEX of the priority queue to NODE. */
+    /* Sets the given INDEX of the priority queue array to NODE. */
     setNode(index, node) {
         while (index > this.size()) {
             this.contents.push(null);
@@ -70,7 +77,7 @@ class PriorityQueue {
         this.contents[index] = node;
     }
 
-    /* Removes and returns the node at INDEX */
+    /* Removes and returns the node at INDEX. */
     removeNode(index) {
         if (index > this.size()) {
             return null;
@@ -104,8 +111,8 @@ class PriorityQueue {
 
     /* Bubbles up the node currently at the given INDEX until no longer needed. */
     bubbleUp(index) {
-        const parentIndex = getParent(index);
-        if (this.getNode(parentIndex) != 0 && this.getNode(index).distance < this.getNode(parent).distance) {
+        const parentIndex = this.getParent(index);
+        if (parentIndex !== 0 && this.getNode(index).distance < this.getNode(parentIndex).distance) {
             this.swap(index, parentIndex);
             this.bubbleUp(parentIndex);
         }
@@ -114,27 +121,29 @@ class PriorityQueue {
     /* Bubbles down the node currently at the given INDEX until no longer needed. */
     bubbleDown(index) {
         const curr = this.getNode(index);
-        const left = this.getNode(this.getLeftOf(index));
-        const right = this.getNode(this.getRightOf(index));
-        if (left == null && right == null) { // No children
+        const leftIndex = this.getLeftOf(index);
+        const rightIndex = this.getRightOf(index);
+        const left = this.getNode(leftIndex);
+        const right = this.getNode(rightIndex);
+        if (left === null && right === null) { // No children
             return;
-        } else if (left == null) { // Only right child
+        } else if (left === null) { // Only right child exists
             if (curr.distance > right.distance) {
-                this.swap(index, this.getRight(index));
-                this.bubbleDown(this.getRightOf(index));
+                this.swap(index, rightIndex);
+                this.bubbleDown(rightIndex);
             }
-        } else if (right == null) { // Only left child
+        } else if (right === null) { // Only left child exists
             if (curr.distance > left.distance) {
-                this.swap(index, this.getLeftOf(index));
-                this.bubbleDown(this.getLeftOf(index));
+                this.swap(index, leftIndex);
+                this.bubbleDown(leftIndex);
             }
         } else if (curr.distance > left.distance || curr.distance > right.distance) { // Both children exist, swap needed
             if (left.distance < right.distance) {
-                this.swap(index, this.getLeftOf(index));
-                this.bubbleDown(this.getLeftOf(index));
+                this.swap(index, leftIndex);
+                this.bubbleDown(leftIndex);
             } else {
-                this.swap(index, this.getRightOf(index));
-                this.bubbleDown(this.getRightOf(index));
+                this.swap(index, rightIndex);
+                this.bubbleDown(rightIndex);
             }
         }
 

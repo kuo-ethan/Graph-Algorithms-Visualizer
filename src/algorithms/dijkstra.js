@@ -1,3 +1,5 @@
+import {PriorityQueue} from './priority_queue';
+
 // Performs Dijkstra's algorithm; returns *all* nodes in the order
 // in which they were visited. Also makes nodes point back to their
 // previous node, effectively allowing us to compute the shortest path
@@ -21,7 +23,8 @@ export function dijkstra(grid, startNode, finishNode) {
   }
 }
 
-// My CS61B version of Dijkstra's that uses a priority queue
+/* My CS61B version of Dijkstra's that uses a priority queue. 
+Returns a list of nodes in order of visitation. */
 export function my_dijkstras(grid, startNode, finishNode) {
   const visitedNodesInOrder = []; // for animation purposes
   const unvisitedNodes = getAllNodes(grid); // dist and prev are initially Infinity and null
@@ -33,19 +36,21 @@ export function my_dijkstras(grid, startNode, finishNode) {
   }
   // Begin Dijkstra's algorithm
   while (!PQ.is_empty()) {
-    const closest_node = PQ.pop();
-    closest_node.isVisited = true;
-    visitedNodesInOrder.push(closest_node);
-    if (closest_node === finishNode) {
+    const next_up = PQ.pop();
+    next_up.isVisited = true;
+    visitedNodesInOrder.push(next_up);
+    // Return if reached goal
+    if (next_up === finishNode) {
       return visitedNodesInOrder;
     }
     // Relax edges
-    const unvisitedNeighbors = getUnvisitedNeighbors(closest_node, grid);
+    const unvisitedNeighbors = getUnvisitedNeighbors(next_up, grid);
     for (const neighbor of unvisitedNeighbors) {
-      const candidate_distance = closest_node.distance + 1; // NOTE: if weighted, change 1 to 2
-      if (candidate_distance < neighbor.distance) {
-        neighbor.previousNode = closest_node;
-        PQ.updatePriority(neighbor, candidate_distance);
+      const dist = next_up.distance + 1; // NOTE: if weighted, change 1 to 2
+      if (dist < neighbor.distance) {
+        neighbor.distance = dist;
+        neighbor.previousNode = next_up;
+        PQ.refresh(neighbor);
       }
     }
   }
