@@ -5,7 +5,7 @@ Pass in a heuristic function to run A* algorithm.
 Returns a list of nodes in order of visitation. */
 export function dijkstras(grid, startNode, finishNode, heuristic='') {
   const visitedNodesInOrder = []; // for animation purposes
-  const unvisitedNodes = getAllNodes(grid); // DISTANCE and PREVIOUS are initially Infinity and null
+  const unvisitedNodes = getAllNodes(grid); // DISTANCE and PREVIOUS should be initially Infinity and null
   startNode.distance = 0;
   // Set up the priority queue
   const PQ = new PriorityQueue();
@@ -24,10 +24,13 @@ export function dijkstras(grid, startNode, finishNode, heuristic='') {
       return visitedNodesInOrder;
     }
     next_up.isVisited = true;
-    visitedNodesInOrder.push(next_up);
     // Return if reached goal
     if (next_up === finishNode) {
       return visitedNodesInOrder;
+    }
+    // Don't include start node in animation
+    if (next_up !== startNode) {
+      visitedNodesInOrder.push(next_up);
     }
     // Relax edges
     const unvisitedNeighbors = getUnvisitedNeighbors(next_up, grid);
@@ -76,7 +79,8 @@ export function getNodesInShortestPathOrder(finishNode) {
     nodesInShortestPathOrder.unshift(currentNode);
     currentNode = currentNode.previous;
   }
-  return nodesInShortestPathOrder;
+  // Exclude start and finish for animation purposes
+  return nodesInShortestPathOrder.slice(1, -1);
 }
 
 /* Define heuristic functions and disctionary for A*

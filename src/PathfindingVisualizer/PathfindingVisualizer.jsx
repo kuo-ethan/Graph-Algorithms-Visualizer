@@ -13,7 +13,8 @@ const START_NODE_COL = 15;
 const FINISH_NODE_ROW = 10;
 const FINISH_NODE_COL = 35;
 
-var algorithm = "Dijkstra's";
+var algorithm = '';
+var speed = 20 // fast : 10, normal : 20, slow : 50
 
 export default class PathfindingVisualizer extends Component {
   constructor() {
@@ -22,12 +23,6 @@ export default class PathfindingVisualizer extends Component {
       grid: [],
       mouseIsPressed: false,
     };
-  }
-
-  clear() {
-    const grid = getInitialGrid();
-    this.setState({grid});
-    this.clearGrid();
   }
 
   selectDijkstras() {
@@ -43,7 +38,7 @@ export default class PathfindingVisualizer extends Component {
   }
 
   componentDidMount() {
-    const grid = getInitialGrid();
+    const grid = initializeGrid();
     this.setState({grid});
   }
 
@@ -62,32 +57,64 @@ export default class PathfindingVisualizer extends Component {
     this.setState({mouseIsPressed: false});
   }
 
-  clearGrid() {
+  /* Reset both the grid UI and node objects */
+  clear() {
+    const grid = initializeGrid();
+    this.setState({grid});
+    this.clearGridAnimation();
+  }
+
+  clearGridAnimation(keep_mods=false) {
     for (const row of this.state.grid) {
       for (const node of row) {
         if (node.isStart) {
           document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-start';
         } else if (node.isFinish) {
           document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-finish';
+        } else if (node.isWall && keep_mods) {
+          document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-wall';
         } else{
           document.getElementById(`node-${node.row}-${node.col}`).className = 'node node';
         }
       }
     }
   }
+
+  /* Reset both the grid UI and node objects, except walls and weighted nodes are kept. */
+  reset() {
+    const grid = resetGrid(this.state.grid);
+    this.setState({grid});
+    this.clearGridAnimation(true); // Keep walls and weighted nodes in UI
+  }
+
+  /* Reset the grid UI and node objects, but keep the walls and weighted ndoes. */
+  
+
+  selectSlowSpeed() {
+    speed = 50;
+  }
+
+  selectNormalSpeed() {
+    speed = 20;
+  }
+
+  selectFastSpeed() {
+    speed = 10;
+  }
+
   animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder) {
     for (let i = 0; i <= visitedNodesInOrder.length; i++) {
       if (i === visitedNodesInOrder.length) {
         setTimeout(() => {
           this.animateShortestPath(nodesInShortestPathOrder);
-        }, 10 * i);
+        }, speed * i);
         return;
       }
       setTimeout(() => {
         const node = visitedNodesInOrder[i];
         document.getElementById(`node-${node.row}-${node.col}`).className =
           'node node-visited';
-      }, 10 * i);
+      }, speed * i);
     }
   }
 
@@ -115,7 +142,10 @@ export default class PathfindingVisualizer extends Component {
       default:
     }
   }
+
   visualizeDijkstra() {
+    // Before running and animating dijkstra's, reset nodes and UI.
+    this.reset();
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
     const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
@@ -125,6 +155,7 @@ export default class PathfindingVisualizer extends Component {
   }
 
   visualizeAStar(heuristic) {
+    this.reset();
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
     const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
@@ -134,15 +165,14 @@ export default class PathfindingVisualizer extends Component {
   }
 
   render() {
+    console.log("called render");
     const {grid, mouseIsPressed} = this.state;
-
     return (
       <>
         <Navbar bg="light" expand="lg">
           <Container>
             <Button variant='light'>Info</Button>{' '}
             <Button variant='light' onClick={() => this.clear()}>Clear</Button>{' '}
-            <Button variant='light'>Reset Visualizer</Button>{' '}
             <Button variant='light' onClick={() => this.visualize()}>Visualize</Button>{' '}
             <NavDropdown title='Algorithms'>
                 <NavDropdown.Item onClick={() => this.selectDijkstras()}>Dijkstra's</NavDropdown.Item>
@@ -150,9 +180,9 @@ export default class PathfindingVisualizer extends Component {
                 <NavDropdown.Item onClick={() => this.selectAStarManhattan()}>A* (Manhattan Heuristic)</NavDropdown.Item>
             </NavDropdown>
             <NavDropdown title='Speed'>
-                <NavDropdown.Item>Slow</NavDropdown.Item>
-                <NavDropdown.Item>Normal</NavDropdown.Item>
-                <NavDropdown.Item>Fast</NavDropdown.Item>
+                <NavDropdown.Item onClick={() => this.selectSlowSpeed()}>Slow</NavDropdown.Item>
+                <NavDropdown.Item onClick={() => this.selectNormalSpeed()}>Normal</NavDropdown.Item>
+                <NavDropdown.Item onClick={() => this.selectFastSpeed()}>Fast</NavDropdown.Item>
             </NavDropdown>
           </Container>
         </Navbar>
@@ -187,12 +217,32 @@ export default class PathfindingVisualizer extends Component {
   }
 }
 
-const getInitialGrid = () => {
+/* Return a grid representing the initial grid with only start and finish. */
+const initializeGrid = () => {
   const grid = [];
   for (let row = 0; row < 20; row++) {
     const currentRow = [];
     for (let col = 0; col < 50; col++) {
-      currentRow.push(createNode(col, row));
+      const node = createNode(col, row);
+      currentRow.push(node);
+    }
+    grid.push(currentRow);
+  }
+  return grid;
+};
+
+/* Return the initial grid but with walls and weighted nodes kept. */
+const resetGrid = (old_grid) => {
+  const grid = [];
+  for (let row = 0; row < 20; row++) {
+    const currentRow = [];
+    const old_row = old_grid[row];
+    for (let col = 0; col < 50; col++) {
+      const node = createNode(col, row);
+      if (old_row[col].isWall) {
+        node.isWall = true;
+      }
+      currentRow.push(node);
     }
     grid.push(currentRow);
   }
