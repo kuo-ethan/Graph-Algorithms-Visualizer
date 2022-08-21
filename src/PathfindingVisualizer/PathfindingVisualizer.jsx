@@ -43,12 +43,22 @@ export default class PathfindingVisualizer extends Component {
   }
 
   handleMouseDown(row, col) {
+    document.addEventListener("keydown", function(event) {
+      if (event.code === 'ShiftLeft') {
+          console.log("shift is pressed, mousedown");
+      }
+    });
     const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
     this.setState({grid: newGrid, mouseIsPressed: true});
   }
 
   handleMouseEnter(row, col) {
     if (!this.state.mouseIsPressed) return;
+    document.addEventListener("keydown", function(event) {
+      if (event.code === 'ShiftLeft') {
+          console.log("shift is pressed, mouseenter");
+      }
+    });
     const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
     this.setState({grid: newGrid});
   }
@@ -165,7 +175,6 @@ export default class PathfindingVisualizer extends Component {
   }
 
   render() {
-    console.log("called render");
     const {grid, mouseIsPressed} = this.state;
     return (
       <>
@@ -191,7 +200,7 @@ export default class PathfindingVisualizer extends Component {
             return (
               <div key={rowIdx}>
                 {row.map((node, nodeIdx) => {
-                  const {row, col, isFinish, isStart, isWall} = node;
+                  const {row, col, isFinish, isStart, isWall, isWeighted} = node;
                   return (
                     <Node
                       key={nodeIdx}
@@ -199,11 +208,10 @@ export default class PathfindingVisualizer extends Component {
                       isFinish={isFinish}
                       isStart={isStart}
                       isWall={isWall}
+                      isWeighted={isWeighted}
                       mouseIsPressed={mouseIsPressed}
                       onMouseDown={(row, col) => this.handleMouseDown(row, col)}
-                      onMouseEnter={(row, col) =>
-                        this.handleMouseEnter(row, col)
-                      }
+                      onMouseEnter={(row, col) => this.handleMouseEnter(row, col)}
                       onMouseUp={() => this.handleMouseUp()}
                       row={row}></Node>
                   );
@@ -258,6 +266,7 @@ const createNode = (col, row) => {
     distance: Infinity,
     isVisited: false,
     isWall: false,
+    isWeighted: false,
     previous: null,
   };
 };

@@ -50,6 +50,10 @@
   background-color: rgb(12, 53, 71);
 }
 
+.node-weighted {
+  background: radial-gradient(ellipse at center,  #000000cb 0%,#000000cb 47%,#ffffff 48%);
+}
+
 .node-shortest-path {
   animation-name: shortestPath;
   animation-duration: 1.5s;
