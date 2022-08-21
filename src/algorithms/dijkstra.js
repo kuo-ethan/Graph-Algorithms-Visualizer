@@ -10,11 +10,7 @@ export function dijkstras(grid, startNode, finishNode, heuristic='') {
   // Set up the priority queue
   const PQ = new PriorityQueue();
   for (const node of unvisitedNodes) {
-    if (!heuristic) { // For Dijkstras
-      node.priority = node.distance;
-    } else { // For A*
-      node.priority = node.distance + HEURISTICS[heuristic](node, finishNode);
-    }
+    node.priority = node.distance; // Regardless of Dijkstra's or A*, initialy priorities are all Infinity
     PQ.insert(node);
   }
   // Begin algorithm
@@ -85,14 +81,14 @@ export function getNodesInShortestPathOrder(finishNode) {
 
 // Define heuristic functions and disctionary for A*
 
-/* Euclidean heuristic computes distance with a "birds-eye-view". */
+/* Euclidean heuristic guesses distance with a "birds-eye-view". */
 function euclidean(node, goal) {
-  return Math.sqrt(Math.pow(node.row - goal.row, 2) + Math.pow(node.col - goal.col, 2));
+  return 1.001 * (Math.sqrt(Math.pow(node.row - goal.row, 2) + Math.pow(node.col - goal.col, 2)));
 }
 
-/* Manhattan heuristic compusing distance using the 4 cardinal directions. */
+/* Manhattan heuristic guesses distance using the 4 cardinal directions. */
 function manhattan(node, goal) {
-  return Math.abs(node.row - goal.row) + Math.abs(node.col - goal.col);
+  return 1.001 * (Math.abs(node.row - goal.row) + Math.abs(node.col - goal.col));
 }
 
 /* HEURISTICS is a dictionary mapping heuristic name to heuristic function. */

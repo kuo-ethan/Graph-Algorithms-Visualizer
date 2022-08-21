@@ -24,6 +24,12 @@ export default class PathfindingVisualizer extends Component {
     };
   }
 
+  clear() {
+    const grid = getInitialGrid();
+    this.setState({grid});
+    this.clearGrid();
+  }
+
   selectDijkstras() {
     algorithm = "Dijkstra's";
   }
@@ -56,6 +62,19 @@ export default class PathfindingVisualizer extends Component {
     this.setState({mouseIsPressed: false});
   }
 
+  clearGrid() {
+    for (const row of this.state.grid) {
+      for (const node of row) {
+        if (node.isStart) {
+          document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-start';
+        } else if (node.isFinish) {
+          document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-finish';
+        } else{
+          document.getElementById(`node-${node.row}-${node.col}`).className = 'node node';
+        }
+      }
+    }
+  }
   animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder) {
     for (let i = 0; i <= visitedNodesInOrder.length; i++) {
       if (i === visitedNodesInOrder.length) {
@@ -122,7 +141,7 @@ export default class PathfindingVisualizer extends Component {
         <Navbar bg="light" expand="lg">
           <Container>
             <Button variant='light'>Info</Button>{' '}
-            <Button variant='light'>Clear</Button>{' '}
+            <Button variant='light' onClick={() => this.clear()}>Clear</Button>{' '}
             <Button variant='light'>Reset Visualizer</Button>{' '}
             <Button variant='light' onClick={() => this.visualize()}>Visualize</Button>{' '}
             <NavDropdown title='Algorithms'>
