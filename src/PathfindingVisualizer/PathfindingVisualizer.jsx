@@ -13,6 +13,8 @@ const START_NODE_COL = 15;
 const FINISH_NODE_ROW = 10;
 const FINISH_NODE_COL = 35;
 
+var algorithm = "Dijkstra's";
+
 export default class PathfindingVisualizer extends Component {
   constructor() {
     super();
@@ -20,6 +22,18 @@ export default class PathfindingVisualizer extends Component {
       grid: [],
       mouseIsPressed: false,
     };
+  }
+
+  selectDijkstras() {
+    algorithm = "Dijkstra's";
+  }
+
+  selectAStarEuclidean() {
+    algorithm = "A* (Euclidean Heuristic)";
+  }
+
+  selectAStarManhattan() {
+    algorithm = "A* (Manhattan Heuristic)";
   }
 
   componentDidMount() {
@@ -68,6 +82,20 @@ export default class PathfindingVisualizer extends Component {
     }
   }
 
+  visualize() {
+    switch(algorithm) {
+      case "Dijkstra's":
+        this.visualizeDijkstra();
+        break;
+      case "A* (Euclidean Heuristic)":
+        this.visualizeAStar("euclidean");
+        break;
+      case "A* (Manhattan Heuristic)":
+        this.visualizeAStar("manhattan");
+        break;
+      default:
+    }
+  }
   visualizeDijkstra() {
     const {grid} = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
@@ -96,11 +124,11 @@ export default class PathfindingVisualizer extends Component {
             <Button variant='light'>Info</Button>{' '}
             <Button variant='light'>Clear</Button>{' '}
             <Button variant='light'>Reset Visualizer</Button>{' '}
-            <Button variant='light' onClick={() => this.visualizeDijkstra()}>Visualize</Button>{' '}
+            <Button variant='light' onClick={() => this.visualize()}>Visualize</Button>{' '}
             <NavDropdown title='Algorithms'>
-                <NavDropdown.Item>Dijkstra's</NavDropdown.Item>
-                <NavDropdown.Item>A* (Euclidean Heuristic)</NavDropdown.Item>
-                <NavDropdown.Item>A* (Manhattan Heuristic)</NavDropdown.Item>
+                <NavDropdown.Item onClick={() => this.selectDijkstras()}>Dijkstra's</NavDropdown.Item>
+                <NavDropdown.Item onClick={() => this.selectAStarEuclidean()}>A* (Euclidean Heuristic)</NavDropdown.Item>
+                <NavDropdown.Item onClick={() => this.selectAStarManhattan()}>A* (Manhattan Heuristic)</NavDropdown.Item>
             </NavDropdown>
             <NavDropdown title='Speed'>
                 <NavDropdown.Item>Slow</NavDropdown.Item>
@@ -109,12 +137,6 @@ export default class PathfindingVisualizer extends Component {
             </NavDropdown>
           </Container>
         </Navbar>
-        <button onClick={() => this.visualizeDijkstra()}>
-          Visualize Dijkstra's Algorithm
-        </button>
-        <button onClick={() => this.visualizeAStar('manhattan')}>
-          Visualize A* Algorithm (manhattan)
-        </button>
         <div className="grid">
           {grid.map((row, rowIdx) => {
             return (
