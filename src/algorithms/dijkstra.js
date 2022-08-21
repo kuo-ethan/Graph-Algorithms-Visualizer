@@ -79,9 +79,17 @@ export function getNodesInShortestPathOrder(finishNode) {
   return nodesInShortestPathOrder;
 }
 
-// Define heuristic functions and disctionary for A*
+/* Define heuristic functions and disctionary for A*
+========================================================
+NOTE: Heuristic is scaled to weigh more heavy than actual distance from source.
+This is to ensure that if two nodes have the same priority, we choose the node
+closer to the goal. This does not really violate admissibility since nodes that are
+0.001 off are essentially still the same priority; we just use the tiny difference
+to specify an ordering of equal priority nodes.
+*/
 
-/* Euclidean heuristic guesses distance with a "birds-eye-view". */
+/* Euclidean heuristic guesses distance with a "birds-eye-view". 
+That way, */
 function euclidean(node, goal) {
   return 1.001 * (Math.sqrt(Math.pow(node.row - goal.row, 2) + Math.pow(node.col - goal.col, 2)));
 }
