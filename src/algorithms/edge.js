@@ -1,4 +1,4 @@
-/* An EDGE represents a directed edge between two vertices. 
+/* A directed edge between two vertices. 
 Used only for spanning algorithms (Prim's and Kruscal's). */
 
 export class Edge {
@@ -6,7 +6,7 @@ export class Edge {
         this.source = source;
         this.dest = dest;
         this.path = path;
-        this.weight = path.length - 1;
+        this.weight = path.length + 1;
     }
 
     // ESSENTIAL METHODS

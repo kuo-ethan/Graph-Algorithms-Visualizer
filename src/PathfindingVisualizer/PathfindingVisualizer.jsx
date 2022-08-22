@@ -18,9 +18,10 @@ const SLOW = 45;
 const NORMAL = 15;
 const FAST = 5;
 
-var algorithm = '';
+var algorithm = "Dijkstra's"; // for simplicity, make default algorithm Dijkstra's
 var speed = NORMAL;
 var toggle_weights = false;
+var first_vertex_placed = false;
 
 // Add weights instead of walls when left shift is pressed.
 // refactor (resolved: don't think it really matters what toggle_weights is, just never use it)
@@ -48,31 +49,58 @@ export default class PathfindingVisualizer extends Component {
 
   selectDijkstras() {
     algorithm = "Dijkstra's";
+    if (this.switchedModes('pathfinding')) {
+      clear();
+    }
   }
 
   selectAStarEuclidean() {
     algorithm = "A* (Euclidean Heuristic)";
+    if (this.switchedModes('pathfinding')) {
+      clear();
+    }
   }
 
   selectAStarManhattan() {
     algorithm = "A* (Manhattan Heuristic)";
+    if (this.switchedModes('pathfinding')) {
+      clear();
+    }
   }
 
   selectPrims() {
-    algorithm = "Prim's"
+    algorithm = "Prim's";
+    if (this.switchedModes('spanning')) {
+      clear();
+    }
+  }
+
+  switchedModes(next_mode) {
+    var curr_mode;
+    if (algorithm === "Prim's" || algorithm === "Kruscal's") {
+      curr_mode = 'spanning';
+    } else {
+      curr_mode = 'pathfinding';
+    }
+    return curr_mode !== next_mode;
   }
 
   componentDidMount() {
-    const grid = initializeGrid();
+    const grid = initializePathfindingGrid();
     this.setState({grid});
   }
 
-  // refactor - if MST algorithm, mouse down means we are plotting vertices to span. (resolved)
   handleMouseDown(row, col) {
     const node = this.state.grid[row][col];
     if (algorithm === "Prim's" || algorithm === "Kruscal's") {
-      const newGrid = getNewGridWithVertexToggled(this.state.grid. row, col);
-      this.setState({grid: newGrid, mouseIsPressed: true});
+      if (!first_vertex_placed) {
+        const newGrid = getNewGridWithStartToggled(this.state.grid, row, col);
+        this.setState({grid: newGrid, mouseIsPressed: true});
+        first_vertex_placed = true;
+      } else {
+        const newGrid = getNewGridWithVertexToggled(this.state.grid. row, col);
+        this.setState({grid: newGrid, mouseIsPressed: true});
+      }
     } else {
       if (toggle_weights && !node.isWall) {
         const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
@@ -84,23 +112,18 @@ export default class PathfindingVisualizer extends Component {
     }
   }
 
-  // refactor (resolved)
+  // Only for weights and walls, not vertices
   handleMouseEnter(row, col) {
-    if (!this.state.mouseIsPressed) {
+    if (!this.state.mouseIsPressed || algorithm === "Prim's" || algorithm === "Kruscal's") {
       return;
     }
     const node = this.state.grid[row][col];
-    if (algorithm === "Prim's" || algorithm === "Kruscal's") {
-      const newGrid = getNewGridWithVertexToggled(this.state.grid. row, col);
+    if (toggle_weights && !node.isWall) {
+      const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
       this.setState({grid: newGrid, mouseIsPressed: true});
-    } else {
-      if (toggle_weights && !node.isWall) {
-        const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
-        this.setState({grid: newGrid, mouseIsPressed: true});
-      } else if (!toggle_weights && !node.isWeighted) {
-        const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
-        this.setState({grid: newGrid, mouseIsPressed: true});
-      }
+    } else if (!toggle_weights && !node.isWeighted) {
+      const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
+      this.setState({grid: newGrid, mouseIsPressed: true});
     }
   }
 
@@ -110,7 +133,13 @@ export default class PathfindingVisualizer extends Component {
 
   /* Reset both the grid UI and node objects */
   clear() {
-    const grid = initializeGrid();
+    var grid;
+    if (algorithm === "Prim's" || algorithm === "Kruscal's") {
+      grid = initializeSpanningGrid();
+      first_vertex_placed = false;
+    } else {
+      grid = initializePathfindingGrid();
+    }
     this.setState({grid});
     this.clearGridUI();
   }
@@ -121,7 +150,7 @@ export default class PathfindingVisualizer extends Component {
     for (const row of this.state.grid) {
       for (const node of row) {
         if (algorithm == "Prim's") {
-          if (node.isStart) {
+          if (node.isStart && keep_mods) {
             document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-start';
           } else if (node.isVertex && keep_mods) {
             document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-vertex';
@@ -145,12 +174,12 @@ export default class PathfindingVisualizer extends Component {
     }
   }
 
-  /* Reset both the grid UI and node objects, except walls and weighted nodes are kept. */
-  // refactor (also keep node-to-span) (resolved)
+  /* Reset both the grid UI and node objects to its initial state. 
+  Objects (walls + weights + start + finish, start + vertices) are kept. */
   reset() {
     const grid = resetGrid(this.state.grid);
     this.setState({grid});
-    this.clearGridUI(true); // Keep walls + weight nodes or vertices in UI
+    this.clearGridUI(true);
   }
 
   selectSlowSpeed() {
@@ -248,8 +277,7 @@ export default class PathfindingVisualizer extends Component {
   visualizePrims() {
     this.reset();
     const {grid} = this.state;
-    const startNode = grid[START_NODE_ROW][START_NODE_COL];
-    const edgesInOrder = prims(grid, startNode);
+    const edgesInOrder = prims(grid);
     this.animatePrims(edgesInOrder);
   }
 
@@ -308,7 +336,7 @@ export default class PathfindingVisualizer extends Component {
 }
 
 /* Return a grid representing the initial grid with only default start and finish. */
-const initializeGrid = () => {
+const initializePathfindingGrid = () => {
   const grid = [];
   for (let row = 0; row < 20; row++) {
     const currentRow = [];
@@ -316,6 +344,20 @@ const initializeGrid = () => {
       const node = createNode(col, row);
       node.isStart = row === START_NODE_ROW && col === START_NODE_COL;
       node.isFinish = row === FINISH_NODE_ROW && col === FINISH_NODE_COL;
+      currentRow.push(node);
+    }
+    grid.push(currentRow);
+  }
+  return grid;
+};
+
+/* Return an empty grid. */
+const initializeSpanningGrid = () => {
+  const grid = [];
+  for (let row = 0; row < 20; row++) {
+    const currentRow = [];
+    for (let col = 0; col < 50; col++) {
+      const node = createNode(col, row);
       currentRow.push(node);
     }
     grid.push(currentRow);
@@ -392,6 +434,17 @@ const getNewGridWithVertexToggled = (grid, row, col) => {
   const newNode = {
     ...node,
     isVertex: !node.isVertex,
+  };
+  newGrid[row][col] = newNode;
+  return newGrid;
+};
+
+const getNewGridWithStartToggled = (grid, row, col) => {
+  const newGrid = grid.slice();
+  const node = newGrid[row][col];
+  const newNode = {
+    ...node,
+    isStart: !node.isStart,
   };
   newGrid[row][col] = newNode;
   return newGrid;

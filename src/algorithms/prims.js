@@ -2,22 +2,24 @@ import { dijkstras, getNodesInShortestPathOrder } from './dijkstra';
 import { Edge } from './edge';
 import { PriorityQueue } from './priority_queue';
 
-export function prims(grid, startVertex) {
+export function prims(grid) {
   const edgesInOrder = []; // for animation purposes
-  const edges = []; // all edges to be considered
-  const vertices = getAllVertices(grid); // distance and prev are already Infinity and null, respectively
+  const vertices = getAllVertices(grid);
 
   // Manually construct the unique edges for a complete graph with these vertices.
+  const edges = [];
   for (const i = 0; i < vertices.length - 1; i++) {
     for (const j = i + 1; j < vertices.length; j++) {
         const source = vertices[j];
         const dest = vertices[j];
         const shortestPath = [];
+
         const tempGrid = getTempGrid(source.row, source.col, dest.row, dest.col);
+        const temp_source = tempGrid[source.row][source.col];
+        const temp_dest = tempGrid[dest.row][dest.col];
         // Get the shortest path from SOURCE to DEST using A*
-        dijkstras(tempGrid, tempGrid[source.row][source.col], tempGrid[dest.row][dest.col], 'manhattan');
-        const tempShortestPath = getNodesInShortestPathOrder(dest); // excludes source and dest
-        // TODO: tempShortestPath contains simulated nodes. Use row/col indices to construct the real shortestPath
+        dijkstras(tempGrid, temp_source, temp_dest, 'manhattan');
+        const tempShortestPath = getNodesInShortestPathOrder(temp_dest);
         for (const temp_node in tempShortestPath) {
           shortestPath.push(grid[temp_node.row][temp_node.col]);
         }
@@ -66,7 +68,7 @@ function getAllVertices(grid) {
     const nodes = [];
     for (const row of grid) {
         for (const node of row) {
-        if (node.isVertex) {
+        if (node.isVertex || node.isStart) {
             nodes.push(node);
         }
         }
