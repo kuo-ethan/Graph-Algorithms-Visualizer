@@ -14,6 +14,7 @@ const START_NODE_COL = 15;
 const FINISH_NODE_ROW = 10;
 const FINISH_NODE_COL = 35;
 
+const EXTRA_SLOW = 200;
 const SLOW = 45;
 const NORMAL = 15;
 const FAST = 5;
@@ -50,28 +51,28 @@ export default class PathfindingVisualizer extends Component {
   selectDijkstras() {
     algorithm = "Dijkstra's";
     if (this.switchedModes('pathfinding')) {
-      clear();
+      this.clear();
     }
   }
 
   selectAStarEuclidean() {
     algorithm = "A* (Euclidean Heuristic)";
     if (this.switchedModes('pathfinding')) {
-      clear();
+      this.clear();
     }
   }
 
   selectAStarManhattan() {
     algorithm = "A* (Manhattan Heuristic)";
     if (this.switchedModes('pathfinding')) {
-      clear();
+      this.clear();
     }
   }
 
   selectPrims() {
     algorithm = "Prim's";
     if (this.switchedModes('spanning')) {
-      clear();
+      this.clear();
     }
   }
 
@@ -98,7 +99,7 @@ export default class PathfindingVisualizer extends Component {
         this.setState({grid: newGrid, mouseIsPressed: true});
         first_vertex_placed = true;
       } else {
-        const newGrid = getNewGridWithVertexToggled(this.state.grid. row, col);
+        const newGrid = getNewGridWithVertexToggled(this.state.grid, row, col);
         this.setState({grid: newGrid, mouseIsPressed: true});
       }
     } else {
@@ -149,7 +150,7 @@ export default class PathfindingVisualizer extends Component {
   clearGridUI(keep_mods=false) {
     for (const row of this.state.grid) {
       for (const node of row) {
-        if (algorithm == "Prim's") {
+        if (algorithm === "Prim's") {
           if (node.isStart && keep_mods) {
             document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-start';
           } else if (node.isVertex && keep_mods) {
@@ -182,6 +183,9 @@ export default class PathfindingVisualizer extends Component {
     this.clearGridUI(true);
   }
 
+  selectExtraSlowSpeed() {
+    speed = EXTRA_SLOW;
+  }
   selectSlowSpeed() {
     speed = SLOW;
   }
@@ -216,11 +220,11 @@ export default class PathfindingVisualizer extends Component {
   }
 
   animatePrims(edgesInOrder) {
-    const timeElapsed = 0;
+    let timeElapsed = 0;
     for (const edge of edgesInOrder) {
       setTimeout(() => {
         this.animateShortestPath(edge.path) // duration is edge.weight * SLOW
-        timeElapsed = edge.weight * SLOW;
+        timeElapsed += edge.weight * SLOW;
       }, timeElapsed);
     }
   }
@@ -302,6 +306,7 @@ export default class PathfindingVisualizer extends Component {
                 <NavDropdown.Item onClick={() => this.selectPrims()}>Prim's</NavDropdown.Item>
             </NavDropdown>
             <NavDropdown title='Speed'>
+                <NavDropdown.Item onClick={() => this.selectExtraSlowSpeed()}>Extra Slow</NavDropdown.Item>
                 <NavDropdown.Item onClick={() => this.selectSlowSpeed()}>Slow</NavDropdown.Item>
                 <NavDropdown.Item onClick={() => this.selectNormalSpeed()}>Normal</NavDropdown.Item>
                 <NavDropdown.Item onClick={() => this.selectFastSpeed()}>Fast</NavDropdown.Item>
@@ -379,7 +384,7 @@ const resetGrid = (old_grid) => {
     const old_row = old_grid[row];
     for (let col = 0; col < 50; col++) {
       const node = createNode(col, row);
-      if (algorithm == "Prim's") {
+      if (algorithm === "Prim's") {
         node.isVertex = old_row[col].isVertex;
         node.isStart = old_row[col].isStart; // For Prim's, start is the first vertex placed
       } else {
@@ -396,7 +401,7 @@ const resetGrid = (old_grid) => {
 };
 
 // refactor (may not need isStart/isFinish for spanning algorithms) (resolved: again, prob just can ignore the isFinish attribute)
-const createNode = (col, row) => {
+export const createNode = (col, row) => {
   return {
     col,
     row,

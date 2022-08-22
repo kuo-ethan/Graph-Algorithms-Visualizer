@@ -1,11 +1,12 @@
 import { dijkstras, getNodesInShortestPathOrder } from './dijkstra';
 import { Edge } from './edge';
 import { PriorityQueue } from './priority_queue';
+import { createNode } from '../PathfindingVisualizer/PathfindingVisualizer.jsx'
 
 export function prims(grid) {
   const edgesInOrder = []; // for animation purposes
   const vertices = getAllVertices(grid);
-  const edges = getCompleteGraphEdges(vertices); // assume complete graph
+  const edges = getCompleteGraphEdges(vertices, grid); // assume complete graph
 
   // Set up the priority queue
   const PQ = new PriorityQueue();
@@ -41,11 +42,24 @@ export function prims(grid) {
   return edgesInOrder;
 }
 
+/* Get all vertices in the grid. */
+function getAllVertices(grid) {
+  const vertices = [];
+  for (const row of grid) {
+    for (const node of row) {
+      if (node.isVertex) {
+        vertices.push(node);
+      }
+    }
+  }
+  return vertices;
+}
+
 /* Manually construct the unique directed edges for a complete graph with these vertices. */
-function getCompleteGraphEdges(vertices){
+function getCompleteGraphEdges(vertices, grid){
   const edges = [];
-  for (const i = 0; i < vertices.length - 1; i++) {
-    for (const j = i + 1; j < vertices.length; j++) {
+  for (let i = 0; i < vertices.length - 1; i++) {
+    for (let j = i + 1; j < vertices.length; j++) {
         const start = vertices[j];
         const end = vertices[j];
         const shortestPath = [];
@@ -70,7 +84,7 @@ function getCompleteGraphEdges(vertices){
 
 /* Return the untraversed edges going from SOURCE. */
 function getUntraversedEdges(source, edges) {
-  untraversedEdges = [];
+  const untraversedEdges = [];
   for (const edge of edges) {
     if (edge.start === source && !edge.traversed) {
       untraversedEdges.push(edge);

@@ -35,12 +35,11 @@ export function dijkstras(grid, startNode, finishNode, heuristic='') {
     // Relax edges
     const unvisitedNeighbors = getUnvisitedNeighbors(next_up, grid);
     for (const neighbor of unvisitedNeighbors) {
-      var dist;
-      const isWeightedEdge = next_up.isWeighted || neighbor.isWeighted; // A weighted edge is incident to a weighted node
-      if (isWeightedEdge) {
-        dist = next_up.distance + 2;
-      } else {
-        dist = next_up.distance + 1;
+      var dist = next_up.distance + 1;
+      if (next_up.isWeighted) {
+        dist += 1;
+      } else if (neighbor.isWeighted) {
+        dist += 1;
       }
       if (dist < neighbor.distance) {
         neighbor.distance = dist;
