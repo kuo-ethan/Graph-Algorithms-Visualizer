@@ -13,8 +13,28 @@ const START_NODE_COL = 15;
 const FINISH_NODE_ROW = 10;
 const FINISH_NODE_COL = 35;
 
+const SLOW = 20;
+const NORMAL = 10;
+const FAST = 5;
+
 var algorithm = '';
-var speed = 20 // fast : 10, normal : 20, slow : 50
+var speed = NORMAL;
+var toggle_weights = false;
+
+// Add weights instead of walls when left shift is pressed.
+document.addEventListener("keydown", function(event) {
+  if (event.code === 'ShiftLeft') {
+      console.log('Shift is pressed, add weights');
+      toggle_weights = true;
+  }
+});
+
+document.addEventListener("keyup", function(event) {
+  if (event.code === 'ShiftLeft') {
+      console.log('Shift is released, stop adding weights');
+      toggle_weights = false;
+  }
+});
 
 export default class PathfindingVisualizer extends Component {
   constructor() {
@@ -43,14 +63,36 @@ export default class PathfindingVisualizer extends Component {
   }
 
   handleMouseDown(row, col) {
-    const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
-    this.setState({grid: newGrid, mouseIsPressed: true});
+    const node = this.state.grid[row][col];
+    if (toggle_weights && !node.isWall) {
+      const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
+      this.setState({grid: newGrid, mouseIsPressed: true});
+    } else if (!toggle_weights && !node.isWeighted) {
+      const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
+      this.setState({grid: newGrid, mouseIsPressed: true});
+    }
   }
 
   handleMouseEnter(row, col) {
-    if (!this.state.mouseIsPressed) return;
-    const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
-    this.setState({grid: newGrid});
+    if (!this.state.mouseIsPressed) {
+      return;
+    }
+    const node = this.state.grid[row][col];
+    if (toggle_weights && !node.isWall) {
+      const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
+      this.setState({grid: newGrid, mouseIsPressed: true});
+    } else if (!toggle_weights && !node.isWeighted) {
+      const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
+      this.setState({grid: newGrid, mouseIsPressed: true});
+    }
+
+    /*var newGrid;
+    if (toggle_weights) {
+      newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
+    } else {
+      newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
+    }
+    this.setState({grid: newGrid});*/
   }
 
   handleMouseUp() {
@@ -61,10 +103,11 @@ export default class PathfindingVisualizer extends Component {
   clear() {
     const grid = initializeGrid();
     this.setState({grid});
-    this.clearGridAnimation();
+    this.clearGridUI();
   }
 
-  clearGridAnimation(keep_mods=false) {
+  /* Uncolors all nodes except the start and finish. Mods (walls and weights) may be kept. */
+  clearGridUI(keep_mods=false) {
     for (const row of this.state.grid) {
       for (const node of row) {
         if (node.isStart) {
@@ -73,7 +116,9 @@ export default class PathfindingVisualizer extends Component {
           document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-finish';
         } else if (node.isWall && keep_mods) {
           document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-wall';
-        } else{
+        } else if (node.isWeighted && keep_mods) {
+          document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-weighted';
+        } else {
           document.getElementById(`node-${node.row}-${node.col}`).className = 'node node';
         }
       }
@@ -84,22 +129,19 @@ export default class PathfindingVisualizer extends Component {
   reset() {
     const grid = resetGrid(this.state.grid);
     this.setState({grid});
-    this.clearGridAnimation(true); // Keep walls and weighted nodes in UI
+    this.clearGridUI(true); // Keep walls and weighted nodes in UI
   }
 
-  /* Reset the grid UI and node objects, but keep the walls and weighted ndoes. */
-  
-
   selectSlowSpeed() {
-    speed = 50;
+    speed = SLOW;
   }
 
   selectNormalSpeed() {
-    speed = 20;
+    speed = NORMAL;
   }
 
   selectFastSpeed() {
-    speed = 10;
+    speed = FAST;
   }
 
   animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder) {
@@ -112,8 +154,13 @@ export default class PathfindingVisualizer extends Component {
       }
       setTimeout(() => {
         const node = visitedNodesInOrder[i];
-        document.getElementById(`node-${node.row}-${node.col}`).className =
+        if (node.isWeighted) {
+          document.getElementById(`node-${node.row}-${node.col}`).className =
+          'node node-weighted-and-visited';
+        } else {
+          document.getElementById(`node-${node.row}-${node.col}`).className =
           'node node-visited';
+        }
       }, speed * i);
     }
   }
@@ -122,8 +169,13 @@ export default class PathfindingVisualizer extends Component {
     for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
       setTimeout(() => {
         const node = nodesInShortestPathOrder[i];
-        document.getElementById(`node-${node.row}-${node.col}`).className =
+        if (node.isWeighted) {
+          document.getElementById(`node-${node.row}-${node.col}`).className =
+          'node node-weighted-and-path';
+        } else {   
+          document.getElementById(`node-${node.row}-${node.col}`).className =
           'node node-shortest-path';
+        }
       }, 50 * i);
     }
   }
@@ -165,7 +217,6 @@ export default class PathfindingVisualizer extends Component {
   }
 
   render() {
-    console.log("called render");
     const {grid, mouseIsPressed} = this.state;
     return (
       <>
@@ -191,7 +242,7 @@ export default class PathfindingVisualizer extends Component {
             return (
               <div key={rowIdx}>
                 {row.map((node, nodeIdx) => {
-                  const {row, col, isFinish, isStart, isWall} = node;
+                  const {row, col, isFinish, isStart, isWall, isWeighted} = node;
                   return (
                     <Node
                       key={nodeIdx}
@@ -199,6 +250,7 @@ export default class PathfindingVisualizer extends Component {
                       isFinish={isFinish}
                       isStart={isStart}
                       isWall={isWall}
+                      isWeighted={isWeighted}
                       mouseIsPressed={mouseIsPressed}
                       onMouseDown={(row, col) => this.handleMouseDown(row, col)}
                       onMouseEnter={(row, col) =>
@@ -239,9 +291,8 @@ const resetGrid = (old_grid) => {
     const old_row = old_grid[row];
     for (let col = 0; col < 50; col++) {
       const node = createNode(col, row);
-      if (old_row[col].isWall) {
-        node.isWall = true;
-      }
+      node.isWall = old_row[col].isWall;
+      node.isWeighted = old_row[col].isWeighted;
       currentRow.push(node);
     }
     grid.push(currentRow);
@@ -258,6 +309,7 @@ const createNode = (col, row) => {
     distance: Infinity,
     isVisited: false,
     isWall: false,
+    isWeighted: false,
     previous: null,
   };
 };
@@ -268,6 +320,17 @@ const getNewGridWithWallToggled = (grid, row, col) => {
   const newNode = {
     ...node,
     isWall: !node.isWall,
+  };
+  newGrid[row][col] = newNode;
+  return newGrid;
+};
+
+const getNewGridWithWeightToggled = (grid, row, col) => {
+  const newGrid = grid.slice();
+  const node = newGrid[row][col];
+  const newNode = {
+    ...node,
+    isWeighted: !node.isWeighted,
   };
   newGrid[row][col] = newNode;
   return newGrid;

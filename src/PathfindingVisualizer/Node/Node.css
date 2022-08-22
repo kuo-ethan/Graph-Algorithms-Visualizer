@@ -14,7 +14,7 @@
 }
 
 .node-visited {
-  animation-name: visitedAnimation;
+  animation-name: nodeToVisited;
   animation-duration: 1.5s;
   animation-timing-function: ease-out;
   animation-delay: 0;
@@ -24,7 +24,7 @@
   animation-play-state: running;
 }
 
-@keyframes visitedAnimation {
+@keyframes nodeToVisited {
   0% {
     transform: scale(0.3);
     background-color: rgba(0, 0, 66, 0.75);
@@ -48,6 +48,47 @@
 
 .node-wall {
   background-color: rgb(12, 53, 71);
+}
+
+.node-weighted {
+  background: radial-gradient(ellipse at center,  #000000cb 0%,#000000cb 47%,#ffffff 48%);
+}
+
+.node-weighted-and-visited {
+  animation-name: weightedToVisited;
+  animation-duration: 1.5s;
+  animation-timing-function: ease-out;
+  animation-delay: 0;
+  animation-direction: alternate;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  animation-play-state: running;
+}
+
+@keyframes weightedToVisited {
+  0% {
+      transform: scale(0.3);
+      background: radial-gradient(ellipse at center,  #000000cb 0%,#000000cb 47%,#000000cb 47%,#000000cb 47%,#ffffff 48%);
+  }
+  
+  50% {
+      transform: scale(0.9);
+      background: radial-gradient(ellipse at center,  #000000cb 0%,#000000cb 47%,#000000cb 47%,#000000cb 47%,rgba(17, 104, 217, 0.75) 48%);
+  }
+  
+  75% {
+      transform: scale(1.2);
+      background: radial-gradient(ellipse at center,  #000000cb 0%,#000000cb 47%,#000000cb 47%,#000000cb 47%,rgba(0, 217, 159, 0.75) 48%);
+  }
+  
+  100% {
+      transform: scale(1);
+      background: radial-gradient(ellipse at center,  #000000cb 0%,#000000cb 47%,#000000cb 47%,#000000cb 47%, rgba(0, 190, 218, 0.75) 48%);
+  }
+}
+
+.node-weighted-and-path {
+  background: radial-gradient(ellipse at center,  #000000cb 0%,#000000cb 47%,#000000cb 47%,#000000cb 47%, rgb(255, 254, 106) 48%);
 }
 
 .node-shortest-path {
