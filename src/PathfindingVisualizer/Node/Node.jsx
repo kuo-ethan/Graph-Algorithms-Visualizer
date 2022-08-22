@@ -10,6 +10,7 @@ export default class Node extends Component {
       isStart,
       isWall,
       isWeighted,
+      isVertex,
       onMouseDown,
       onMouseEnter,
       onMouseUp,
@@ -23,6 +24,8 @@ export default class Node extends Component {
       ? 'node-wall'
       : isWeighted
       ? 'node-weighted'
+      : isVertex
+      ? 'node-vertex'
       : '';
 
     return (

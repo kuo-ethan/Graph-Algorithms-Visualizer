@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import Node from './Node/Node';
 import {dijkstras, getNodesInShortestPathOrder} from '../algorithms/dijkstra';
+import {prims} from '../algorithms/prims';
 import './PathfindingVisualizer.css';
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
@@ -13,8 +14,8 @@ const START_NODE_COL = 15;
 const FINISH_NODE_ROW = 10;
 const FINISH_NODE_COL = 35;
 
-const SLOW = 50;
-const NORMAL = 10;
+const SLOW = 45;
+const NORMAL = 15;
 const FAST = 5;
 
 var algorithm = '';
@@ -22,16 +23,16 @@ var speed = NORMAL;
 var toggle_weights = false;
 
 // Add weights instead of walls when left shift is pressed.
+// refactor (resolved: don't think it really matters what toggle_weights is, just never use it)
 document.addEventListener("keydown", function(event) {
   if (event.code === 'ShiftLeft') {
-      console.log('Shift is pressed, add weights');
       toggle_weights = true;
   }
 });
 
+// refactor (resolved: see above)
 document.addEventListener("keyup", function(event) {
   if (event.code === 'ShiftLeft') {
-      console.log('Shift is released, stop adding weights');
       toggle_weights = false;
   }
 });
@@ -57,42 +58,50 @@ export default class PathfindingVisualizer extends Component {
     algorithm = "A* (Manhattan Heuristic)";
   }
 
+  selectPrims() {
+    algorithm = "Prim's"
+  }
+
   componentDidMount() {
     const grid = initializeGrid();
     this.setState({grid});
   }
 
+  // refactor - if MST algorithm, mouse down means we are plotting vertices to span. (resolved)
   handleMouseDown(row, col) {
     const node = this.state.grid[row][col];
-    if (toggle_weights && !node.isWall) {
-      const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
+    if (algorithm === "Prim's" || algorithm === "Kruscal's") {
+      const newGrid = getNewGridWithVertexToggled(this.state.grid. row, col);
       this.setState({grid: newGrid, mouseIsPressed: true});
-    } else if (!toggle_weights && !node.isWeighted) {
-      const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
-      this.setState({grid: newGrid, mouseIsPressed: true});
+    } else {
+      if (toggle_weights && !node.isWall) {
+        const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
+        this.setState({grid: newGrid, mouseIsPressed: true});
+      } else if (!toggle_weights && !node.isWeighted) {
+        const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
+        this.setState({grid: newGrid, mouseIsPressed: true});
+      }
     }
   }
 
+  // refactor (resolved)
   handleMouseEnter(row, col) {
     if (!this.state.mouseIsPressed) {
       return;
     }
     const node = this.state.grid[row][col];
-    if (toggle_weights && !node.isWall) {
-      const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
+    if (algorithm === "Prim's" || algorithm === "Kruscal's") {
+      const newGrid = getNewGridWithVertexToggled(this.state.grid. row, col);
       this.setState({grid: newGrid, mouseIsPressed: true});
-    } else if (!toggle_weights && !node.isWeighted) {
-      const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
-      this.setState({grid: newGrid, mouseIsPressed: true});
-    }
-
-    /*var newGrid;
-    if (toggle_weights) {
-      newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
     } else {
-      newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
+      if (toggle_weights && !node.isWall) {
+        const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
+        this.setState({grid: newGrid, mouseIsPressed: true});
+      } else if (!toggle_weights && !node.isWeighted) {
+        const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
+        this.setState({grid: newGrid, mouseIsPressed: true});
+      }
     }
-    this.setState({grid: newGrid});*/
   }
 
   handleMouseUp() {
@@ -106,30 +115,42 @@ export default class PathfindingVisualizer extends Component {
     this.clearGridUI();
   }
 
-  /* Uncolors all nodes except the start and finish. Mods (walls and weights) may be kept. */
+  /* Uncolors all nodes except the start and finish. Mods (walls, weights, vertices) may be kept. */
+  // refactor (also keep node-to-span) (resolved)
   clearGridUI(keep_mods=false) {
     for (const row of this.state.grid) {
       for (const node of row) {
-        if (node.isStart) {
-          document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-start';
-        } else if (node.isFinish) {
-          document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-finish';
-        } else if (node.isWall && keep_mods) {
-          document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-wall';
-        } else if (node.isWeighted && keep_mods) {
-          document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-weighted';
+        if (algorithm == "Prim's") {
+          if (node.isStart) {
+            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-start';
+          } else if (node.isVertex && keep_mods) {
+            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-vertex';
+          } else {
+            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node';
+          }
         } else {
-          document.getElementById(`node-${node.row}-${node.col}`).className = 'node node';
+          if (node.isStart) {
+            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-start';
+          } else if (node.isFinish) {
+            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-finish';
+          } else if (node.isWall && keep_mods) {
+            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-wall';
+          } else if (node.isWeighted && keep_mods) {
+            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-weighted';
+          } else {
+            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node';
+          }
         }
       }
     }
   }
 
   /* Reset both the grid UI and node objects, except walls and weighted nodes are kept. */
+  // refactor (also keep node-to-span) (resolved)
   reset() {
     const grid = resetGrid(this.state.grid);
     this.setState({grid});
-    this.clearGridUI(true); // Keep walls and weighted nodes in UI
+    this.clearGridUI(true); // Keep walls + weight nodes or vertices in UI
   }
 
   selectSlowSpeed() {
@@ -165,6 +186,11 @@ export default class PathfindingVisualizer extends Component {
     }
   }
 
+  animatePrims(edgesInOrder) {
+    // Pass in the (a, b) node pairs that represent edges drawn in MST.
+    // Call Dijkstras to draw these edges (start = a, finish = b)
+  }
+
   animateShortestPath(nodesInShortestPathOrder) {
     for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
       setTimeout(() => {
@@ -191,6 +217,9 @@ export default class PathfindingVisualizer extends Component {
       case "A* (Manhattan Heuristic)":
         this.visualizeAStar("manhattan");
         break;
+      case "Prim's":
+        this.visualizePrims();
+        break;
       default:
     }
   }
@@ -216,6 +245,14 @@ export default class PathfindingVisualizer extends Component {
     this.animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
+  visualizePrims() {
+    this.reset();
+    const {grid} = this.state;
+    const startNode = grid[START_NODE_ROW][START_NODE_COL];
+    const edgesInOrder = prims(grid, startNode);
+    this.animatePrims(edgesInOrder);
+  }
+
   render() {
     const {grid, mouseIsPressed} = this.state;
     return (
@@ -229,6 +266,7 @@ export default class PathfindingVisualizer extends Component {
                 <NavDropdown.Item onClick={() => this.selectDijkstras()}>Dijkstra's</NavDropdown.Item>
                 <NavDropdown.Item onClick={() => this.selectAStarEuclidean()}>A* (Euclidean Heuristic)</NavDropdown.Item>
                 <NavDropdown.Item onClick={() => this.selectAStarManhattan()}>A* (Manhattan Heuristic)</NavDropdown.Item>
+                <NavDropdown.Item onClick={() => this.selectPrims()}>Prim's</NavDropdown.Item>
             </NavDropdown>
             <NavDropdown title='Speed'>
                 <NavDropdown.Item onClick={() => this.selectSlowSpeed()}>Slow</NavDropdown.Item>
@@ -284,6 +322,7 @@ const initializeGrid = () => {
 };
 
 /* Return the initial grid but with walls and weighted nodes kept. */
+// refactor (also keep node-to-span) (resolved: keeping vertices)
 const resetGrid = (old_grid) => {
   const grid = [];
   for (let row = 0; row < 20; row++) {
@@ -291,8 +330,12 @@ const resetGrid = (old_grid) => {
     const old_row = old_grid[row];
     for (let col = 0; col < 50; col++) {
       const node = createNode(col, row);
-      node.isWall = old_row[col].isWall;
-      node.isWeighted = old_row[col].isWeighted;
+      if (algorithm == "Prim's") {
+        node.isVertex = old_row[col].isVertex;
+      } else {
+        node.isWall = old_row[col].isWall;
+        node.isWeighted = old_row[col].isWeighted;
+      }
       currentRow.push(node);
     }
     grid.push(currentRow);
@@ -300,6 +343,7 @@ const resetGrid = (old_grid) => {
   return grid;
 };
 
+// refactor (may not need isStart/isFinish for spanning algorithms) (resolved: again, prob just can ignore the isFinish attribute)
 const createNode = (col, row) => {
   return {
     col,
@@ -310,6 +354,7 @@ const createNode = (col, row) => {
     isVisited: false,
     isWall: false,
     isWeighted: false,
+    isVertex: false, // used only for spanning algorithms
     previous: null,
   };
 };
@@ -331,6 +376,17 @@ const getNewGridWithWeightToggled = (grid, row, col) => {
   const newNode = {
     ...node,
     isWeighted: !node.isWeighted,
+  };
+  newGrid[row][col] = newNode;
+  return newGrid;
+};
+
+const getNewGridWithVertexToggled = (grid, row, col) => {
+  const newGrid = grid.slice();
+  const node = newGrid[row][col];
+  const newNode = {
+    ...node,
+    isVertex: !node.isVertex,
   };
   newGrid[row][col] = newNode;
   return newGrid;
