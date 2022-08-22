@@ -1,25 +1,32 @@
-import { dijkstras } from './dijkstra';
+import { dijkstras, getNodesInShortestPathOrder } from './dijkstra';
 import { Edge } from './edge';
 import { PriorityQueue } from './priority_queue';
 
-export function prims(grid, startNode) {
+export function prims(grid, startVertex) {
   const edgesInOrder = []; // for animation purposes
+  const edges = []; // all edges to be considered
   const vertices = getAllVertices(grid); // distance and prev are already Infinity and null, respectively
-  const edges = []
-  // Manually construct the edges for a complete graph with these vertices.
+
+  // Manually construct the unique edges for a complete graph with these vertices.
   for (const i = 0; i < vertices.length - 1; i++) {
     for (const j = i + 1; j < vertices.length; j++) {
-        const source = vertices[i];
+        const source = vertices[j];
         const dest = vertices[j];
-        const temp_grid = getHypotheticalGrid(source, dest);
+        const shortestPath = [];
+        const tempGrid = getTempGrid(source.row, source.col, dest.row, dest.col);
         // Get the shortest path from SOURCE to DEST using A*
-        dijkstras(___, source, dest, 'manhattan');
-        const e = new Edge(source, dest, ______);
+        dijkstras(tempGrid, tempGrid[source.row][source.col], tempGrid[dest.row][dest.col], 'manhattan');
+        const tempShortestPath = getNodesInShortestPathOrder(dest); // excludes source and dest
+        // TODO: tempShortestPath contains simulated nodes. Use row/col indices to construct the real shortestPath
+        for (const temp_node in tempShortestPath) {
+          shortestPath.push(grid[temp_node.row][temp_node.col]);
+        }
+        const e = new Edge(source, dest, shortestPath);
         edges.push(e);
     }
   }
 
-  startNode.distance = 0; // here, distance represents the closest distance to the MST so far
+  startVertex.distance = 0; // here, distance represents the closest distance to the MST so far
   // Set up the priority queue
   const PQ = new PriorityQueue();
   for (const node of unvisitedVertex) {
@@ -71,13 +78,18 @@ function getUntraversedEdges(source, vertices) {
 
 }
 
-/* Returns a empty grid with SOURCE and DEST as start and finish. */
-function getHypotheticalGrid(source, dest) {
+/* Returns a empty grid with the given start and finish. */
+function getTempGrid(source_row, source_col, dest_row, dest_col) {
   const grid = [];
   for (let row = 0; row < 20; row++) {
     const currentRow = [];
     for (let col = 0; col < 50; col++) {
       const node = createNode(col, row);
+      if (source_row === row && source_col === col) {
+        node.isStart = true;
+      } else if (dest_row === row && dest_col === col) {
+        node.isFinish = true;
+      }
       currentRow.push(node);
     }
     grid.push(currentRow);
