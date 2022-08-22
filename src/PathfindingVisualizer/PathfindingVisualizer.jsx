@@ -307,13 +307,15 @@ export default class PathfindingVisualizer extends Component {
   }
 }
 
-/* Return a grid representing the initial grid with only start and finish. */
+/* Return a grid representing the initial grid with only default start and finish. */
 const initializeGrid = () => {
   const grid = [];
   for (let row = 0; row < 20; row++) {
     const currentRow = [];
     for (let col = 0; col < 50; col++) {
       const node = createNode(col, row);
+      node.isStart = row === START_NODE_ROW && col === START_NODE_COL;
+      node.isFinish = row === FINISH_NODE_ROW && col === FINISH_NODE_COL;
       currentRow.push(node);
     }
     grid.push(currentRow);
@@ -332,7 +334,10 @@ const resetGrid = (old_grid) => {
       const node = createNode(col, row);
       if (algorithm == "Prim's") {
         node.isVertex = old_row[col].isVertex;
+        node.isStart = old_row[col].isStart; // For Prim's, start is the first vertex placed
       } else {
+        node.isStart = row === START_NODE_ROW && col === START_NODE_COL;
+        node.isFinish = row === FINISH_NODE_ROW && col === FINISH_NODE_COL;
         node.isWall = old_row[col].isWall;
         node.isWeighted = old_row[col].isWeighted;
       }
@@ -348,8 +353,8 @@ const createNode = (col, row) => {
   return {
     col,
     row,
-    isStart: row === START_NODE_ROW && col === START_NODE_COL,
-    isFinish: row === FINISH_NODE_ROW && col === FINISH_NODE_COL,
+    isStart: false,
+    isFinish: false,
     distance: Infinity,
     isVisited: false,
     isWall: false,
