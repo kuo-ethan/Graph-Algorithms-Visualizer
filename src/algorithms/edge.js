@@ -2,13 +2,11 @@
 Used only for spanning algorithms (Prim's and Kruscal's). */
 
 export class Edge {
-    constructor(source, dest, path) {
-        this.source = source;
-        this.dest = dest;
+    constructor(start, end, path) {
+        this.start = start;
+        this.end = end;
         this.path = path;
         this.weight = path.length + 1;
+        this.traversed = false;
     }
-
-    // ESSENTIAL METHODS
-
 }

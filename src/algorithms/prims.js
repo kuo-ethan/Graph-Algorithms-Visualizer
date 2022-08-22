@@ -5,79 +5,88 @@ import { PriorityQueue } from './priority_queue';
 export function prims(grid) {
   const edgesInOrder = []; // for animation purposes
   const vertices = getAllVertices(grid);
+  const edges = getCompleteGraphEdges(vertices); // assume complete graph
 
-  // Manually construct the unique edges for a complete graph with these vertices.
-  const edges = [];
-  for (const i = 0; i < vertices.length - 1; i++) {
-    for (const j = i + 1; j < vertices.length; j++) {
-        const source = vertices[j];
-        const dest = vertices[j];
-        const shortestPath = [];
-
-        const tempGrid = getTempGrid(source.row, source.col, dest.row, dest.col);
-        const temp_source = tempGrid[source.row][source.col];
-        const temp_dest = tempGrid[dest.row][dest.col];
-        // Get the shortest path from SOURCE to DEST using A*
-        dijkstras(tempGrid, temp_source, temp_dest, 'manhattan');
-        const tempShortestPath = getNodesInShortestPathOrder(temp_dest);
-        for (const temp_node in tempShortestPath) {
-          shortestPath.push(grid[temp_node.row][temp_node.col]);
-        }
-        const e = new Edge(source, dest, shortestPath);
-        edges.push(e);
-    }
-  }
-
-  startVertex.distance = 0; // here, distance represents the closest distance to the MST so far
   // Set up the priority queue
   const PQ = new PriorityQueue();
-  for (const node of unvisitedVertex) {
-    node.priority = node.distance; 
-    PQ.insert(node);
+  for (const vertex of vertices) {
+    if (vertex.isStart) {
+      vertex.distance = 0;
+    }
+    vertex.priority = vertex.distance; 
+    PQ.insert(vertex);
   }
+
   // Begin algorithm
-  while (!PQ.is_empty()) {
-    const next_up = PQ.pop();
-    next_up.isVisited = true;
+  while (!PQ.is_empty) {
+    const curr = PQ.pop();
+    // curr.isVisited = true;
+    if (!curr.isFirst) { // An edge has been added to the MST
+      const edgeTraversed = getEdge(curr.prev, curr, edges);
+      edgeTraversed.traversed = true;
+      edgesInOrder.push(edgeTraversed);
+    }
     // Relax edges
-    const unvisitedNeighbors = getUnvisitedNeighbors(next_up, grid);
-    for (const neighbor of unvisitedNeighbors) {
-      var dist;
-      const isWeightedEdge = next_up.isWeighted || neighbor.isWeighted; // A weighted edge is incident to a weighted node
-      if (isWeightedEdge) {
-        dist = next_up.distance + 2;
-      } else {
-        dist = next_up.distance + 1;
-      }
-      if (dist < neighbor.distance) {
-        neighbor.distance = dist;
-        neighbor.previous = next_up;
-        if (!heuristic) { // For Dijkstras
-          neighbor.priority = dist;
-        } else { // For A*
-          neighbor.priority = dist + HEURISTICS[heuristic](neighbor, finishNode);
-        }
+    const untraversedEdges = getUntraversedEdges(curr, edges);
+    for (const edge of untraversedEdges) {
+      const neighbor = edge.end;
+      if (edge.weight < neighbor.dist) {
+        neighbor.dist = edge.weight;
+        neighbor.priority = edge.weight;
+        neighbor.prev = curr;
         PQ.refresh(neighbor);
       }
     }
   }
-  return edgesInOrder
+  return edgesInOrder;
 }
 
-function getAllVertices(grid) {
-    const nodes = [];
-    for (const row of grid) {
-        for (const node of row) {
-        if (node.isVertex || node.isStart) {
-            nodes.push(node);
+/* Manually construct the unique directed edges for a complete graph with these vertices. */
+function getCompleteGraphEdges(vertices){
+  const edges = [];
+  for (const i = 0; i < vertices.length - 1; i++) {
+    for (const j = i + 1; j < vertices.length; j++) {
+        const start = vertices[j];
+        const end = vertices[j];
+        const shortestPath = [];
+
+        const tempGrid = getTempGrid(start.row, start.col, end.row, end.col);
+        const temp_source = tempGrid[start.row][start.col];
+        const temp_dest = tempGrid[end.row][end.col];
+        // Get the shortest path from START to END using A*
+        dijkstras(tempGrid, temp_source, temp_dest, 'manhattan');
+        const tempShortestPath = getNodesInShortestPathOrder(temp_dest);
+        for (const temp_node of tempShortestPath) {
+          shortestPath.push(grid[temp_node.row][temp_node.col]);
         }
-        }
+        const forward = new Edge(start, end, shortestPath);
+        const backward = new Edge(end, start, shortestPath.slice().reverse());
+        edges.push(forward);
+        edges.push(backward);
     }
-    return nodes;
+  }
+  return edges;
 }
 
-function getUntraversedEdges(source, vertices) {
+/* Return the untraversed edges going from SOURCE. */
+function getUntraversedEdges(source, edges) {
+  untraversedEdges = [];
+  for (const edge of edges) {
+    if (edge.start === source && !edge.traversed) {
+      untraversedEdges.push(edge);
+    }
+  }
+  return untraversedEdges;
+}
 
+/* Return the edge that goes from vertex START to END. */
+function getEdge(start, end, edges) {
+  for (const edge of edges) {
+    if (edge.start === start && edge.end === end) {
+      return edge;
+    }
+  }
+  return null;
 }
 
 /* Returns a empty grid with the given start and finish. */

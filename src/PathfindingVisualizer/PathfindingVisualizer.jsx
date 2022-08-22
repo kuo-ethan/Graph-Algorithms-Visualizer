@@ -216,8 +216,13 @@ export default class PathfindingVisualizer extends Component {
   }
 
   animatePrims(edgesInOrder) {
-    // Pass in the (a, b) node pairs that represent edges drawn in MST.
-    // Call Dijkstras to draw these edges (start = a, finish = b)
+    const timeElapsed = 0;
+    for (const edge of edgesInOrder) {
+      setTimeout(() => {
+        this.animateShortestPath(edge.path) // duration is edge.weight * SLOW
+        timeElapsed = edge.weight * SLOW;
+      }, timeElapsed);
+    }
   }
 
   animateShortestPath(nodesInShortestPathOrder) {
@@ -231,7 +236,7 @@ export default class PathfindingVisualizer extends Component {
           document.getElementById(`node-${node.row}-${node.col}`).className =
           'node node-shortest-path';
         }
-      }, 50 * i);
+      }, SLOW * i);
     }
   }
 
