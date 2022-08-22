@@ -13,7 +13,7 @@ const START_NODE_COL = 15;
 const FINISH_NODE_ROW = 10;
 const FINISH_NODE_COL = 35;
 
-const SLOW = 20;
+const SLOW = 50;
 const NORMAL = 10;
 const FAST = 5;
 

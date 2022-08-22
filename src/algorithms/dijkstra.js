@@ -10,7 +10,7 @@ export function dijkstras(grid, startNode, finishNode, heuristic='') {
   // Set up the priority queue
   const PQ = new PriorityQueue();
   for (const node of unvisitedNodes) {
-    node.priority = node.distance; // Regardless of Dijkstra's or A*, initialy priorities are all Infinity
+    node.priority = node.distance; // Regardless of Dijkstra's or A*, initial priorities are all Infinity
     PQ.insert(node);
   }
   // Begin algorithm
@@ -35,15 +35,21 @@ export function dijkstras(grid, startNode, finishNode, heuristic='') {
     // Relax edges
     const unvisitedNeighbors = getUnvisitedNeighbors(next_up, grid);
     for (const neighbor of unvisitedNeighbors) {
-      const dist = next_up.distance + 1; // NOTE: if weighted, change 1 to 2
+      var dist;
+      const isWeightedEdge = next_up.isWeighted || neighbor.isWeighted; // A weighted edge is incident to a weighted node
+      if (isWeightedEdge) {
+        dist = next_up.distance + 2;
+      } else {
+        dist = next_up.distance + 1;
+      }
       if (dist < neighbor.distance) {
         neighbor.distance = dist;
+        neighbor.previous = next_up;
         if (!heuristic) { // For Dijkstras
           neighbor.priority = dist;
         } else { // For A*
           neighbor.priority = dist + HEURISTICS[heuristic](neighbor, finishNode);
         }
-        neighbor.previous = next_up;
         PQ.refresh(neighbor);
       }
     }
@@ -92,8 +98,7 @@ closer to the goal. This does not really violate admissibility since nodes that 
 to specify an ordering of equal priority nodes.
 */
 
-/* Euclidean heuristic guesses distance with a "birds-eye-view". 
-That way, */
+/* Euclidean heuristic guesses distance with a "birds-eye-view". */
 function euclidean(node, goal) {
   return 1.001 * (Math.sqrt(Math.pow(node.row - goal.row, 2) + Math.pow(node.col - goal.col, 2)));
 }
