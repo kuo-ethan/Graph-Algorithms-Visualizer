@@ -14,16 +14,17 @@ export function prims(grid) {
     if (vertex.isStart) {
       vertex.distance = 0;
     }
-    vertex.priority = vertex.distance; 
+    vertex.priority = vertex.distance;
     PQ.insert(vertex);
   }
 
   // Begin algorithm
-  while (!PQ.is_empty) {
+  while (!PQ.is_empty()) {
     const curr = PQ.pop();
+    //console.log(`popped vertex at (${curr.row}, ${curr.col})`);
     // curr.isVisited = true;
-    if (!curr.isFirst) { // An edge has been added to the MST
-      const edgeTraversed = getEdge(curr.prev, curr, edges);
+    if (!curr.isStart) { // Adding edge to the MST
+      const edgeTraversed = getEdge(curr.previous, curr, edges);
       edgeTraversed.traversed = true;
       edgesInOrder.push(edgeTraversed);
     }
@@ -31,10 +32,10 @@ export function prims(grid) {
     const untraversedEdges = getUntraversedEdges(curr, edges);
     for (const edge of untraversedEdges) {
       const neighbor = edge.end;
-      if (edge.weight < neighbor.dist) {
-        neighbor.dist = edge.weight;
+      if (edge.weight < neighbor.distance) {
+        neighbor.distance = edge.weight;
         neighbor.priority = edge.weight;
-        neighbor.prev = curr;
+        neighbor.previous = curr;
         PQ.refresh(neighbor);
       }
     }
@@ -47,7 +48,7 @@ function getAllVertices(grid) {
   const vertices = [];
   for (const row of grid) {
     for (const node of row) {
-      if (node.isVertex) {
+      if (node.isVertex || node.isStart) {
         vertices.push(node);
       }
     }
@@ -60,7 +61,7 @@ function getCompleteGraphEdges(vertices, grid){
   const edges = [];
   for (let i = 0; i < vertices.length - 1; i++) {
     for (let j = i + 1; j < vertices.length; j++) {
-        const start = vertices[j];
+        const start = vertices[i];
         const end = vertices[j];
         const shortestPath = [];
 

@@ -49,31 +49,35 @@ export default class PathfindingVisualizer extends Component {
   }
 
   selectDijkstras() {
-    algorithm = "Dijkstra's";
     if (this.switchedModes('pathfinding')) {
+      algorithm = "Dijkstra's";
       this.clear();
     }
+    algorithm = "Dijkstra's";
   }
 
   selectAStarEuclidean() {
-    algorithm = "A* (Euclidean Heuristic)";
     if (this.switchedModes('pathfinding')) {
+      algorithm = "A* (Euclidean Heuristic)";
       this.clear();
     }
+    algorithm = "A* (Euclidean Heuristic)";
   }
 
   selectAStarManhattan() {
-    algorithm = "A* (Manhattan Heuristic)";
     if (this.switchedModes('pathfinding')) {
+      algorithm = "A* (Manhattan Heuristic)";
       this.clear();
     }
+    algorithm = "A* (Manhattan Heuristic)";
   }
 
   selectPrims() {
-    algorithm = "Prim's";
     if (this.switchedModes('spanning')) {
+      algorithm = "Prim's";
       this.clear();
     }
+    algorithm = "Prim's";
   }
 
   switchedModes(next_mode) {
@@ -224,16 +228,26 @@ export default class PathfindingVisualizer extends Component {
   }
 
   animatePrims(edgesInOrder) {
-    let timeElapsed = 0;
-    for (const edge of edgesInOrder) {
+    //this.helper(edgesInOrder, this.helper);
+    this.helper(edgesInOrder, 0);
+  }
+
+  helper(edgesInOrder, timeElapsed) {
+    if (edgesInOrder) {
+      const curr_edge = edgesInOrder[0];
       setTimeout(() => {
-        this.animateShortestPath(edge.path) // duration is edge.weight * SLOW
-        timeElapsed += edge.weight * SLOW;
+        this.animateShortestPath(curr_edge.path);
       }, timeElapsed);
+      timeElapsed = timeElapsed + curr_edge.weight * speed;
+      this.helper(edgesInOrder.slice(1), timeElapsed);
     }
   }
 
   animateShortestPath(nodesInShortestPathOrder) {
+    var animationSpeed = SLOW; // for pathfinding algorithms
+    if (algorithm === "Prim's") {
+      animationSpeed = speed;
+    }
     for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
       setTimeout(() => {
         const node = nodesInShortestPathOrder[i];
@@ -244,7 +258,7 @@ export default class PathfindingVisualizer extends Component {
           document.getElementById(`node-${node.row}-${node.col}`).className =
           'node node-shortest-path';
         }
-      }, SLOW * i);
+      }, animationSpeed * i);
     }
   }
 
@@ -322,7 +336,7 @@ export default class PathfindingVisualizer extends Component {
             return (
               <div key={rowIdx}>
                 {row.map((node, nodeIdx) => {
-                  const {row, col, isFinish, isStart, isWall, isWeighted} = node;
+                  const {row, col, isFinish, isStart, isWall, isWeighted, isVertex} = node;
                   return (
                     <Node
                       key={nodeIdx}
@@ -331,6 +345,7 @@ export default class PathfindingVisualizer extends Component {
                       isStart={isStart}
                       isWall={isWall}
                       isWeighted={isWeighted}
+                      isVertex={isVertex}
                       mouseIsPressed={mouseIsPressed}
                       onMouseDown={(row, col) => this.handleMouseDown(row, col)}
                       onMouseEnter={(row, col) =>
@@ -379,8 +394,7 @@ const initializeSpanningGrid = () => {
   return grid;
 };
 
-/* Return the initial grid but with walls and weighted nodes kept. */
-// refactor (also keep node-to-span) (resolved: keeping vertices)
+/* Return a fresh grid with mods transferred over. */
 const resetGrid = (old_grid) => {
   const grid = [];
   for (let row = 0; row < 20; row++) {
