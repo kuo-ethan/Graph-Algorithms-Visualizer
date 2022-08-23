@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import Node from './Node/Node';
 import {dijkstras, getNodesInShortestPathOrder} from '../algorithms/dijkstra';
 import {prims} from '../algorithms/prims';
-import './PathfindingVisualizer.css';
+import './Visualizer.css';
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
@@ -39,7 +39,7 @@ document.addEventListener("keyup", function(event) {
   }
 });
 
-export default class PathfindingVisualizer extends Component {
+export default class Visualizer extends Component {
   constructor() {
     super();
     this.state = {

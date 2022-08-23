@@ -1,4 +1,4 @@
-import {PriorityQueue} from './priority_queue';
+import {PriorityQueue} from '../classes/priority_queue';
 
 /* Dijkstra's algorithm as taught in CS 61B. Uses a priority queue.
 Pass in a heuristic function to run A* algorithm. 

@@ -1,7 +1,7 @@
 import { dijkstras, getNodesInShortestPathOrder } from './dijkstra';
-import { Edge } from './edge';
-import { PriorityQueue } from './priority_queue';
-import { createNode } from '../PathfindingVisualizer/PathfindingVisualizer.jsx'
+import { Edge } from '../classes/edge';
+import { PriorityQueue } from '../classes/priority_queue';
+import { createNode } from '../Visualizer/Visualizer.jsx'
 
 export function prims(grid) {
   const edgesInOrder = []; // for animation purposes
