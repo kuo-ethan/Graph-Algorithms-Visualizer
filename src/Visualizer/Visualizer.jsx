@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import Node from './Node/Node';
 import {dijkstras, getNodesInShortestPathOrder} from '../algorithms/dijkstra';
 import {prims} from '../algorithms/prims';
+import {kruscals} from '../algorithms/kruscals';
 import './Visualizer.css';
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
@@ -75,8 +76,21 @@ export default class Visualizer extends Component {
     if (this.switchedModes('spanning')) {
       algorithm = "Prim's";
       this.clear();
+    } else {
+      if (!this.startExists()) { // then we switched from Kruscals to Prims
+        console.log("enabling green vertex");
+        first_vertex_placed = false; // enable plotting the green start vertex
+      }
+      algorithm = "Prim's";
     }
-    algorithm = "Prim's";
+  }
+
+  selectKruscals() {
+    if (this.switchedModes('spanning')) {
+      algorithm = "Kruscal's";
+      this.clear();
+    }
+    algorithm = "Kruscal's";
   }
 
   switchedModes(next_mode) {
@@ -96,7 +110,7 @@ export default class Visualizer extends Component {
 
   handleMouseDown(row, col) {
     const node = this.state.grid[row][col];
-    if (algorithm === "Prim's" || algorithm === "Kruscal's") {
+    if (algorithm === "Prim's") {
       if (!first_vertex_placed) {
         const newGrid = getNewGridWithStartToggled(this.state.grid, row, col);
         this.setState({grid: newGrid, mouseIsPressed: true});
@@ -105,6 +119,9 @@ export default class Visualizer extends Component {
         const newGrid = getNewGridWithVertexToggled(this.state.grid, row, col);
         this.setState({grid: newGrid, mouseIsPressed: true});
       }
+    } else if (algorithm === "Kruscal's") {
+        const newGrid = getNewGridWithVertexToggled(this.state.grid, row, col);
+        this.setState({grid: newGrid, mouseIsPressed: true});
     } else {
       if (!node.isStart && !node.isFinish) {
         if (toggle_weights && !node.isWall) {
@@ -161,6 +178,12 @@ export default class Visualizer extends Component {
           if (node.isStart && keep_mods) {
             document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-start';
           } else if (node.isVertex && keep_mods) {
+            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-vertex';
+          } else {
+            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node';
+          }
+        } else if (algorithm === "Kruscal's") {
+          if (node.isVertex && keep_mods) {
             document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-vertex';
           } else {
             document.getElementById(`node-${node.row}-${node.col}`).className = 'node node';
@@ -226,7 +249,7 @@ export default class Visualizer extends Component {
     }
   }
 
-  animatePrims(edgesInOrder) {
+  animateMST(edgesInOrder) {
     this.helper(edgesInOrder, 0);
   }
 
@@ -236,7 +259,6 @@ export default class Visualizer extends Component {
       setTimeout(() => {
         this.animateShortestPath(curr_edge.path);
       }, timeElapsed);
-      console.log(curr_edge.weight);
       timeElapsed = timeElapsed + curr_edge.weight * speed;
       this.helper(edgesInOrder.slice(1), timeElapsed);
     }
@@ -244,8 +266,10 @@ export default class Visualizer extends Component {
 
   animateShortestPath(nodesInShortestPathOrder) {
     var animationSpeed = SLOW; // for pathfinding algorithms
-    if (algorithm === "Prim's") {
+    var style = 'node node-shortest-path';
+    if (algorithm === "Prim's" || algorithm === "Kruscal's") {
       animationSpeed = speed;
+      style = 'node node-visited';
     }
     for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
       setTimeout(() => {
@@ -254,8 +278,7 @@ export default class Visualizer extends Component {
           document.getElementById(`node-${node.row}-${node.col}`).className =
           'node node-weighted-and-path';
         } else {   
-          document.getElementById(`node-${node.row}-${node.col}`).className =
-          'node node-shortest-path';
+          document.getElementById(`node-${node.row}-${node.col}`).className = style;
         }
       }, animationSpeed * i);
     }
@@ -274,6 +297,9 @@ export default class Visualizer extends Component {
         break;
       case "Prim's":
         this.visualizePrims();
+        break;
+      case "Kruscal's":
+        this.visualizeKruscals();
         break;
       default:
     }
@@ -304,7 +330,26 @@ export default class Visualizer extends Component {
     this.reset();
     const {grid} = this.state;
     const edgesInOrder = prims(grid);
-    this.animatePrims(edgesInOrder);
+    this.animateMST(edgesInOrder);
+  }
+
+  visualizeKruscals() {
+    this.reset();
+    const {grid} = this.state;
+    const edgesInOrder = kruscals(grid);
+    this.animateMST(edgesInOrder);
+  }
+
+  startExists() {
+    const {grid} = this.state;
+    for (const row of grid) {
+      for (const node of row) {
+        if (node.isStart) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   render() {
@@ -321,6 +366,7 @@ export default class Visualizer extends Component {
                 <NavDropdown.Item onClick={() => this.selectAStarEuclidean()}>A* (Euclidean Heuristic)</NavDropdown.Item>
                 <NavDropdown.Item onClick={() => this.selectAStarManhattan()}>A* (Manhattan Heuristic)</NavDropdown.Item>
                 <NavDropdown.Item onClick={() => this.selectPrims()}>Prim's</NavDropdown.Item>
+                <NavDropdown.Item onClick={() => this.selectKruscals()}>Kruscal's</NavDropdown.Item>
             </NavDropdown>
             <NavDropdown title='Speed'>
                 <NavDropdown.Item onClick={() => this.selectExtraSlowSpeed()}>Extra Slow</NavDropdown.Item>
@@ -404,6 +450,9 @@ const resetGrid = (old_grid) => {
       if (algorithm === "Prim's") {
         node.isVertex = old_row[col].isVertex;
         node.isStart = old_row[col].isStart; // For Prim's, start is the first vertex placed
+      } else if (algorithm === "Kruscal's") {
+        node.isVertex = old_row[col].isVertex;
+        node.isStart = false;
       } else {
         node.isStart = row === START_NODE_ROW && col === START_NODE_COL;
         node.isFinish = row === FINISH_NODE_ROW && col === FINISH_NODE_COL;

@@ -6,26 +6,25 @@ Returns a list of edges in the MST, in order of visitation.
 */
 export function kruscals(grid) {
     const edgesInOrder = []; // for animation purposes
-    const vertices = getAllVerticesKruscals(grid);
-    const edges = getCompleteGraphEdges(vertices, grid); // note: there are 2 directed edges for each undirected edge
-
-    sortedEdgesAscending = sortEdges(edges); // pick a random directed edge for each undirected edge
+    const nodes = getAllNodesKruscals(grid); // nodes that are vertices
+    const edges = getCompleteGraphEdges(nodes, grid); // note: there are 2 directed edges for each undirected edge
+    const vertices = wrapNodesInVertices(nodes); // nodes wrapped in a Vertex instance, enabling Union Find functionalities
+    const sortedEdgesAscending = sortEdges(edges); // pick a random directed edge for each undirected edge
     for (const curr_edge of sortedEdgesAscending) {
-        const u = nodeToVertex(curr_edge.source, vertices);
-        const v = nodeToVertex(curr_edge.dest, vertices);
+        const u = nodeToVertex(curr_edge.start, vertices);
+        const v = nodeToVertex(curr_edge.end, vertices);
         if (!sameSet(u, v)) {
             edgesInOrder.push(curr_edge);
             union(u, v);
         }
     }
-
     return edgesInOrder;
 }
 
 /* Sort all undirected edges in the graph by ascending weight. 
 Assumes that edges has "forward" and "backward" directed edges side-by-side. */
 function sortEdges(edges) {
-    directed_edges = [];
+    const directed_edges = [];
     for (let i = 0; i < edges.length; i += 2) {
         const forward = edges[i];
         const backward = edges[i + 1];
@@ -51,14 +50,22 @@ function nodeToVertex(node, vertices) {
     }
 }
 
-function getAllVerticesKruscals(grid) {
-    const vertices = [];
+function getAllNodesKruscals(grid) {
+    const nodes = [];
     for (const row of grid) {
         for (const node of row) {
             if (node.isVertex) {
-                vertices.push(new Vertex(node));
+                nodes.push(node);
             }
         }
+    }
+    return nodes;
+}
+
+function wrapNodesInVertices(nodes) {
+    const vertices = [];
+    for (const node of nodes) {
+        vertices.push(new Vertex(node));
     }
     return vertices;
 }

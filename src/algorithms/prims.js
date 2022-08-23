@@ -5,7 +5,7 @@ import { createNode } from '../Visualizer/Visualizer.jsx'
 
 export function prims(grid) {
   const edgesInOrder = []; // for animation purposes
-  const vertices = getAllVerticesPrims(grid);
+  const vertices = getAllNodesPrims(grid);
   const edges = getCompleteGraphEdges(vertices, grid); // assume complete graph
 
   // Set up the priority queue
@@ -42,7 +42,7 @@ export function prims(grid) {
 }
 
 /* Get all vertices in the grid. */
-function getAllVerticesPrims(grid) {
+function getAllNodesPrims(grid) {
   const vertices = [];
   for (const row of grid) {
     for (const node of row) {
@@ -55,7 +55,7 @@ function getAllVerticesPrims(grid) {
 }
 
 /* Manually construct the unique directed edges for a complete graph with these vertices. */
-function getCompleteGraphEdges(vertices, grid){
+export function getCompleteGraphEdges(vertices, grid){
   const edges = [];
   for (let i = 0; i < vertices.length - 1; i++) {
     for (let j = i + 1; j < vertices.length; j++) {
