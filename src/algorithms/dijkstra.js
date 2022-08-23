@@ -32,15 +32,20 @@ export function dijkstras(grid, startNode, finishNode, heuristic='') {
     if (next_up !== startNode) {
       visitedNodesInOrder.push(next_up);
     }
+    const x = next_up.row - 10;
+    const y = next_up.col - 15
+    console.log("(" + x + ", " + y + ") Distance: " + next_up.distance + ", Priority: " + next_up.priority);
     // Relax edges
     const unvisitedNeighbors = getUnvisitedNeighbors(next_up, grid);
     for (const neighbor of unvisitedNeighbors) {
       var dist = next_up.distance + 1;
       if (next_up.isWeighted) {
         dist += 1;
-      } else if (neighbor.isWeighted) {
+      }
+      if (neighbor.isWeighted) {
         dist += 1;
       }
+      
       if (dist < neighbor.distance) {
         neighbor.distance = dist;
         neighbor.previous = next_up;
@@ -48,6 +53,10 @@ export function dijkstras(grid, startNode, finishNode, heuristic='') {
           neighbor.priority = dist;
         } else { // For A*
           neighbor.priority = dist + HEURISTICS[heuristic](neighbor, finishNode);
+        }
+        // testing
+        if (neighbor === finishNode) {
+          console.log("found finish node! distance: " + neighbor.distance + ", priority: " + neighbor.priority)
         }
         PQ.refresh(neighbor);
       }

@@ -103,12 +103,14 @@ export default class PathfindingVisualizer extends Component {
         this.setState({grid: newGrid, mouseIsPressed: true});
       }
     } else {
-      if (toggle_weights && !node.isWall) {
-        const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
-        this.setState({grid: newGrid, mouseIsPressed: true});
-      } else if (!toggle_weights && !node.isWeighted) {
-        const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
-        this.setState({grid: newGrid, mouseIsPressed: true});
+      if (!node.isStart && !node.isFinish) {
+        if (toggle_weights && !node.isWall) {
+          const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
+          this.setState({grid: newGrid, mouseIsPressed: true});
+        } else if (!toggle_weights && !node.isWeighted) {
+          const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
+          this.setState({grid: newGrid, mouseIsPressed: true});
+        }
       }
     }
   }
@@ -119,12 +121,14 @@ export default class PathfindingVisualizer extends Component {
       return;
     }
     const node = this.state.grid[row][col];
-    if (toggle_weights && !node.isWall) {
-      const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
-      this.setState({grid: newGrid, mouseIsPressed: true});
-    } else if (!toggle_weights && !node.isWeighted) {
-      const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
-      this.setState({grid: newGrid, mouseIsPressed: true});
+    if (!node.isStart && !node.isFinish) {
+      if (toggle_weights && !node.isWall) {
+        const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
+        this.setState({grid: newGrid, mouseIsPressed: true});
+      } else if (!toggle_weights && !node.isWeighted) {
+        const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
+        this.setState({grid: newGrid, mouseIsPressed: true});
+      }
     }
   }
 
