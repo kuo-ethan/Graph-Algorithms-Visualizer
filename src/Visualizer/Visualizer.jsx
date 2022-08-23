@@ -25,10 +25,9 @@ var toggle_weights = false;
 var first_vertex_placed = false;
 
 // Add weights instead of walls when left shift is pressed.
-// refactor (resolved: don't think it really matters what toggle_weights is, just never use it)
 document.addEventListener("keydown", function(event) {
   if (event.code === 'ShiftLeft') {
-      toggle_weights = true;
+    toggle_weights = true;
   }
 });
 
@@ -47,7 +46,7 @@ export default class Visualizer extends Component {
       mouseIsPressed: false,
     };
   }
-
+  
   selectDijkstras() {
     if (this.switchedModes('pathfinding')) {
       algorithm = "Dijkstra's";
@@ -228,16 +227,16 @@ export default class Visualizer extends Component {
   }
 
   animatePrims(edgesInOrder) {
-    //this.helper(edgesInOrder, this.helper);
     this.helper(edgesInOrder, 0);
   }
 
   helper(edgesInOrder, timeElapsed) {
-    if (edgesInOrder) {
+    if (edgesInOrder.length > 0) {
       const curr_edge = edgesInOrder[0];
       setTimeout(() => {
         this.animateShortestPath(curr_edge.path);
       }, timeElapsed);
+      console.log(curr_edge.weight);
       timeElapsed = timeElapsed + curr_edge.weight * speed;
       this.helper(edgesInOrder.slice(1), timeElapsed);
     }
