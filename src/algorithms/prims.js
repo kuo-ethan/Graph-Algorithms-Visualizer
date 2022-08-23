@@ -5,7 +5,7 @@ import { createNode } from '../Visualizer/Visualizer.jsx'
 
 export function prims(grid) {
   const edgesInOrder = []; // for animation purposes
-  const vertices = getAllVertices(grid);
+  const vertices = getAllVerticesPrims(grid);
   const edges = getCompleteGraphEdges(vertices, grid); // assume complete graph
 
   // Set up the priority queue
@@ -21,8 +21,6 @@ export function prims(grid) {
   // Begin algorithm
   while (!PQ.is_empty()) {
     const curr = PQ.pop();
-    //console.log(`popped vertex at (${curr.row}, ${curr.col})`);
-    // curr.isVisited = true;
     if (!curr.isStart) { // Adding edge to the MST
       const edgeTraversed = getEdge(curr.previous, curr, edges);
       edgeTraversed.traversed = true;
@@ -44,7 +42,7 @@ export function prims(grid) {
 }
 
 /* Get all vertices in the grid. */
-function getAllVertices(grid) {
+function getAllVerticesPrims(grid) {
   const vertices = [];
   for (const row of grid) {
     for (const node of row) {
