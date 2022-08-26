@@ -451,7 +451,7 @@ export default class Visualizer extends Component {
                             <strong>Dijkstra's:</strong> Finds the shortest path
                             from the start node to every other node in the
                             graph. Visits nodes in order of weighted distance
-                            from the start node. Halt when goal node is visited.
+                            from the start node. Halts when goal node is visited.
                           </li>
                           <li>
                             <strong>A* (Euclidean Heuristic):</strong> A
@@ -472,12 +472,12 @@ export default class Visualizer extends Component {
                           </li>
                         </ul>
                         <h4>Spanning</h4>
-                        <i>Note:</i> The visualizer assumes the graph is <strong>complete</strong>, meaning there is an edge between every possible pair of vertices. Furthermore, the weight of this edge is equal to the distance between its two vertices.
+                        <i>Note:</i> The visualizer assumes the graph is <strong>complete</strong>, meaning there is an edge between every possible pair of vertices. Furthermore, the weight of each edge is equal to the quad-directional distance between its two vertices.
                         <ul>
                           <li>
                             <strong>Prim's:</strong> Finds a minimum spanning
                             tree (lightest possible subset of edges that connects all 
-                            vertices of a graph together) by starting from
+                            vertices of a graph) by starting from
                             a given start node, and successively connecting the
                             closest vertex to the already-connected vertices.
                           </li>
