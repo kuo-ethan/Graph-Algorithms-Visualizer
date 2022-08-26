@@ -1,12 +1,12 @@
 import { Vertex } from '../classes/vertex';
 import { getCompleteGraphEdges } from './prims'
 
-/* Kruscal's algorithm, using Weighted Quick Union data structure with path compression. 
+/* Kruskal's algorithm, using Weighted Quick Union data structure with path compression. 
 Returns a list of edges in the MST, in order of visitation.
 */
-export function kruscals(grid) {
+export function kruskals(grid) {
     const edgesInOrder = []; // for animation purposes
-    const nodes = getAllNodesKruscals(grid); // nodes that are vertices
+    const nodes = getAllNodesKruskals(grid); // nodes that are vertices
     const edges = getCompleteGraphEdges(nodes, grid); // note: there are 2 directed edges for each undirected edge
     const vertices = wrapNodesInVertices(nodes); // nodes wrapped in a Vertex instance, enabling Union Find functionalities
     const sortedEdgesAscending = sortEdges(edges); // pick a random directed edge for each undirected edge
@@ -50,7 +50,7 @@ function nodeToVertex(node, vertices) {
     }
 }
 
-function getAllNodesKruscals(grid) {
+function getAllNodesKruskals(grid) {
     const nodes = [];
     for (const row of grid) {
         for (const node of row) {

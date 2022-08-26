@@ -1,5 +1,5 @@
 /* A directed edge between two vertices. 
-Used only for spanning algorithms (Prim's and Kruscal's). */
+Used only for spanning algorithms (Prim's and Kruskal's). */
 
 export class Edge {
     constructor(start, end, path) {

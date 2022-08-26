@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import Node from "./Node/Node";
 import { dijkstras, getNodesInShortestPathOrder } from "../algorithms/dijkstra";
 import { prims } from "../algorithms/prims";
-import { kruscals } from "../algorithms/kruscals";
+import { kruskals } from "../algorithms/kruskals";
 import "./Visualizer.css";
 import Container from "react-bootstrap/Container";
 import Navbar from "react-bootstrap/Navbar";
@@ -88,7 +88,7 @@ export default class Visualizer extends Component {
       this.clear();
     } else {
       if (!this.startExists()) {
-        // then we switched from Kruscals to Prims
+        // then we switched from Kruskals to Prims
         console.log("enabling green vertex");
         first_vertex_placed = false; // enable plotting the green start vertex
       }
@@ -96,17 +96,17 @@ export default class Visualizer extends Component {
     }
   }
 
-  selectKruscals() {
+  selectKruskals() {
     if (this.switchedModes("spanning")) {
-      algorithm = "Kruscal's";
+      algorithm = "Kruskal's";
       this.clear();
     }
-    algorithm = "Kruscal's";
+    algorithm = "Kruskal's";
   }
 
   switchedModes(next_mode) {
     var curr_mode;
-    if (algorithm === "Prim's" || algorithm === "Kruscal's") {
+    if (algorithm === "Prim's" || algorithm === "Kruskal's") {
       curr_mode = "spanning";
     } else {
       curr_mode = "pathfinding";
@@ -130,7 +130,7 @@ export default class Visualizer extends Component {
         const newGrid = getNewGridWithVertexToggled(this.state.grid, row, col);
         this.setState({ grid: newGrid, mouseIsPressed: true });
       }
-    } else if (algorithm === "Kruscal's") {
+    } else if (algorithm === "Kruskal's") {
       const newGrid = getNewGridWithVertexToggled(this.state.grid, row, col);
       this.setState({ grid: newGrid, mouseIsPressed: true });
     } else {
@@ -155,7 +155,7 @@ export default class Visualizer extends Component {
     if (
       !this.state.mouseIsPressed ||
       algorithm === "Prim's" ||
-      algorithm === "Kruscal's"
+      algorithm === "Kruskal's"
     ) {
       return;
     }
@@ -178,7 +178,7 @@ export default class Visualizer extends Component {
   /* Reset both the grid UI and node objects */
   clear() {
     var grid;
-    if (algorithm === "Prim's" || algorithm === "Kruscal's") {
+    if (algorithm === "Prim's" || algorithm === "Kruskal's") {
       grid = initializeSpanningGrid();
       first_vertex_placed = false;
     } else {
@@ -204,7 +204,7 @@ export default class Visualizer extends Component {
             document.getElementById(`node-${node.row}-${node.col}`).className =
               "node node";
           }
-        } else if (algorithm === "Kruscal's") {
+        } else if (algorithm === "Kruskal's") {
           if (node.isVertex && keep_mods) {
             document.getElementById(`node-${node.row}-${node.col}`).className =
               "node node-vertex";
@@ -296,7 +296,7 @@ export default class Visualizer extends Component {
   animateShortestPath(nodesInShortestPathOrder) {
     var animationSpeed = SLOW; // for pathfinding algorithms
     var style = "node node-shortest-path";
-    if (algorithm === "Prim's" || algorithm === "Kruscal's") {
+    if (algorithm === "Prim's" || algorithm === "Kruskal's") {
       animationSpeed = speed;
       style = "node node-visited";
     }
@@ -328,8 +328,8 @@ export default class Visualizer extends Component {
       case "Prim's":
         this.visualizePrims();
         break;
-      case "Kruscal's":
-        this.visualizeKruscals();
+      case "Kruskal's":
+        this.visualizeKruskals();
         break;
       default:
     }
@@ -368,10 +368,10 @@ export default class Visualizer extends Component {
     this.animateMST(edgesInOrder);
   }
 
-  visualizeKruscals() {
+  visualizeKruskals() {
     this.reset();
     const { grid } = this.state;
-    const edgesInOrder = kruscals(grid);
+    const edgesInOrder = kruskals(grid);
     this.animateMST(edgesInOrder);
   }
 
@@ -482,7 +482,7 @@ export default class Visualizer extends Component {
                             closest vertex to the already-connected vertices.
                           </li>
                           <li>
-                            <strong>Kruscal's:</strong> Finds a minimum spanning
+                            <strong>Kruskal's:</strong> Finds a minimum spanning
                             tree by repeatedly selecting the lightest edge to be
                             part of the tree, given that the edge does not
                             introduce a cycle in the set of edges selected
@@ -544,8 +544,8 @@ export default class Visualizer extends Component {
               <NavDropdown.Item onClick={() => this.selectPrims()}>
                 Prim's
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => this.selectKruscals()}>
-                Kruscal's
+              <NavDropdown.Item onClick={() => this.selectKruskals()}>
+                Kruskal's
               </NavDropdown.Item>
             </NavDropdown>
             <NavDropdown title="Speed">
@@ -647,7 +647,7 @@ const resetGrid = (old_grid) => {
       if (algorithm === "Prim's") {
         node.isVertex = old_row[col].isVertex;
         node.isStart = old_row[col].isStart; // For Prim's, start is the first vertex placed
-      } else if (algorithm === "Kruscal's") {
+      } else if (algorithm === "Kruskal's") {
         node.isVertex = old_row[col].isVertex;
         node.isStart = false;
       } else {
