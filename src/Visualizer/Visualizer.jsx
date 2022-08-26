@@ -1,14 +1,23 @@
-import React, {Component} from 'react';
-import Node from './Node/Node';
-import {dijkstras, getNodesInShortestPathOrder} from '../algorithms/dijkstra';
-import {prims} from '../algorithms/prims';
-import {kruscals} from '../algorithms/kruscals';
-import './Visualizer.css';
-import Container from 'react-bootstrap/Container';
-import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
-import Button from 'react-bootstrap/Button';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { Component } from "react";
+import Node from "./Node/Node";
+import { dijkstras, getNodesInShortestPathOrder } from "../algorithms/dijkstra";
+import { prims } from "../algorithms/prims";
+import { kruscals } from "../algorithms/kruscals";
+import "./Visualizer.css";
+import Container from "react-bootstrap/Container";
+import Navbar from "react-bootstrap/Navbar";
+import NavDropdown from "react-bootstrap/NavDropdown";
+import Button from "react-bootstrap/Button";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { Modal } from "react-bootstrap";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import start from "./pictures/start.png";
+import end from "./pictures/end.png";
+import path from "./pictures/path.png";
+import visited from "./pictures/visited.png";
+import wall from "./pictures/wall.png";
+import weight from "./pictures/weight.png";
 
 const START_NODE_ROW = 10;
 const START_NODE_COL = 15;
@@ -26,16 +35,16 @@ var toggle_weights = false;
 var first_vertex_placed = false;
 
 // Add weights instead of walls when left shift is pressed.
-document.addEventListener("keydown", function(event) {
-  if (event.code === 'ShiftLeft') {
+document.addEventListener("keydown", function (event) {
+  if (event.code === "ShiftLeft") {
     toggle_weights = true;
   }
 });
 
 // refactor (resolved: see above)
-document.addEventListener("keyup", function(event) {
-  if (event.code === 'ShiftLeft') {
-      toggle_weights = false;
+document.addEventListener("keyup", function (event) {
+  if (event.code === "ShiftLeft") {
+    toggle_weights = false;
   }
 });
 
@@ -45,11 +54,12 @@ export default class Visualizer extends Component {
     this.state = {
       grid: [],
       mouseIsPressed: false,
+      show: false,
     };
   }
-  
+
   selectDijkstras() {
-    if (this.switchedModes('pathfinding')) {
+    if (this.switchedModes("pathfinding")) {
       algorithm = "Dijkstra's";
       this.clear();
     }
@@ -57,7 +67,7 @@ export default class Visualizer extends Component {
   }
 
   selectAStarEuclidean() {
-    if (this.switchedModes('pathfinding')) {
+    if (this.switchedModes("pathfinding")) {
       algorithm = "A* (Euclidean Heuristic)";
       this.clear();
     }
@@ -65,7 +75,7 @@ export default class Visualizer extends Component {
   }
 
   selectAStarManhattan() {
-    if (this.switchedModes('pathfinding')) {
+    if (this.switchedModes("pathfinding")) {
       algorithm = "A* (Manhattan Heuristic)";
       this.clear();
     }
@@ -73,11 +83,12 @@ export default class Visualizer extends Component {
   }
 
   selectPrims() {
-    if (this.switchedModes('spanning')) {
+    if (this.switchedModes("spanning")) {
       algorithm = "Prim's";
       this.clear();
     } else {
-      if (!this.startExists()) { // then we switched from Kruscals to Prims
+      if (!this.startExists()) {
+        // then we switched from Kruscals to Prims
         console.log("enabling green vertex");
         first_vertex_placed = false; // enable plotting the green start vertex
       }
@@ -86,7 +97,7 @@ export default class Visualizer extends Component {
   }
 
   selectKruscals() {
-    if (this.switchedModes('spanning')) {
+    if (this.switchedModes("spanning")) {
       algorithm = "Kruscal's";
       this.clear();
     }
@@ -96,16 +107,16 @@ export default class Visualizer extends Component {
   switchedModes(next_mode) {
     var curr_mode;
     if (algorithm === "Prim's" || algorithm === "Kruscal's") {
-      curr_mode = 'spanning';
+      curr_mode = "spanning";
     } else {
-      curr_mode = 'pathfinding';
+      curr_mode = "pathfinding";
     }
     return curr_mode !== next_mode;
   }
 
   componentDidMount() {
     const grid = initializePathfindingGrid();
-    this.setState({grid});
+    this.setState({ grid });
   }
 
   handleMouseDown(row, col) {
@@ -113,23 +124,27 @@ export default class Visualizer extends Component {
     if (algorithm === "Prim's") {
       if (!first_vertex_placed) {
         const newGrid = getNewGridWithStartToggled(this.state.grid, row, col);
-        this.setState({grid: newGrid, mouseIsPressed: true});
+        this.setState({ grid: newGrid, mouseIsPressed: true });
         first_vertex_placed = true;
       } else {
         const newGrid = getNewGridWithVertexToggled(this.state.grid, row, col);
-        this.setState({grid: newGrid, mouseIsPressed: true});
+        this.setState({ grid: newGrid, mouseIsPressed: true });
       }
     } else if (algorithm === "Kruscal's") {
-        const newGrid = getNewGridWithVertexToggled(this.state.grid, row, col);
-        this.setState({grid: newGrid, mouseIsPressed: true});
+      const newGrid = getNewGridWithVertexToggled(this.state.grid, row, col);
+      this.setState({ grid: newGrid, mouseIsPressed: true });
     } else {
       if (!node.isStart && !node.isFinish) {
         if (toggle_weights && !node.isWall) {
-          const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
-          this.setState({grid: newGrid, mouseIsPressed: true});
+          const newGrid = getNewGridWithWeightToggled(
+            this.state.grid,
+            row,
+            col
+          );
+          this.setState({ grid: newGrid, mouseIsPressed: true });
         } else if (!toggle_weights && !node.isWeighted) {
           const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
-          this.setState({grid: newGrid, mouseIsPressed: true});
+          this.setState({ grid: newGrid, mouseIsPressed: true });
         }
       }
     }
@@ -137,23 +152,27 @@ export default class Visualizer extends Component {
 
   // Only for weights and walls, not vertices
   handleMouseEnter(row, col) {
-    if (!this.state.mouseIsPressed || algorithm === "Prim's" || algorithm === "Kruscal's") {
+    if (
+      !this.state.mouseIsPressed ||
+      algorithm === "Prim's" ||
+      algorithm === "Kruscal's"
+    ) {
       return;
     }
     const node = this.state.grid[row][col];
     if (!node.isStart && !node.isFinish) {
       if (toggle_weights && !node.isWall) {
         const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
-        this.setState({grid: newGrid, mouseIsPressed: true});
+        this.setState({ grid: newGrid, mouseIsPressed: true });
       } else if (!toggle_weights && !node.isWeighted) {
         const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
-        this.setState({grid: newGrid, mouseIsPressed: true});
+        this.setState({ grid: newGrid, mouseIsPressed: true });
       }
     }
   }
 
   handleMouseUp() {
-    this.setState({mouseIsPressed: false});
+    this.setState({ mouseIsPressed: false });
   }
 
   /* Reset both the grid UI and node objects */
@@ -165,40 +184,50 @@ export default class Visualizer extends Component {
     } else {
       grid = initializePathfindingGrid();
     }
-    this.setState({grid});
+    this.setState({ grid });
     this.clearGridUI();
   }
 
   /* Uncolors all nodes except the start and finish. Mods (walls, weights, vertices) may be kept. */
   // refactor (also keep node-to-span) (resolved)
-  clearGridUI(keep_mods=false) {
+  clearGridUI(keep_mods = false) {
     for (const row of this.state.grid) {
       for (const node of row) {
         if (algorithm === "Prim's") {
           if (node.isStart && keep_mods) {
-            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-start';
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node node-start";
           } else if (node.isVertex && keep_mods) {
-            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-vertex';
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node node-vertex";
           } else {
-            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node';
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node node";
           }
         } else if (algorithm === "Kruscal's") {
           if (node.isVertex && keep_mods) {
-            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-vertex';
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node node-vertex";
           } else {
-            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node';
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node node";
           }
         } else {
           if (node.isStart) {
-            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-start';
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node node-start";
           } else if (node.isFinish) {
-            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-finish';
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node node-finish";
           } else if (node.isWall && keep_mods) {
-            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-wall';
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node node-wall";
           } else if (node.isWeighted && keep_mods) {
-            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-weighted';
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node node-weighted";
           } else {
-            document.getElementById(`node-${node.row}-${node.col}`).className = 'node node';
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node node";
           }
         }
       }
@@ -209,7 +238,7 @@ export default class Visualizer extends Component {
   Objects (walls + weights + start + finish, start + vertices) are kept. */
   reset() {
     const grid = resetGrid(this.state.grid);
-    this.setState({grid});
+    this.setState({ grid });
     this.clearGridUI(true);
   }
 
@@ -240,10 +269,10 @@ export default class Visualizer extends Component {
         const node = visitedNodesInOrder[i];
         if (node.isWeighted) {
           document.getElementById(`node-${node.row}-${node.col}`).className =
-          'node node-weighted-and-visited';
+            "node node-weighted-and-visited";
         } else {
           document.getElementById(`node-${node.row}-${node.col}`).className =
-          'node node-visited';
+            "node node-visited";
         }
       }, speed * i);
     }
@@ -266,26 +295,27 @@ export default class Visualizer extends Component {
 
   animateShortestPath(nodesInShortestPathOrder) {
     var animationSpeed = SLOW; // for pathfinding algorithms
-    var style = 'node node-shortest-path';
+    var style = "node node-shortest-path";
     if (algorithm === "Prim's" || algorithm === "Kruscal's") {
       animationSpeed = speed;
-      style = 'node node-visited';
+      style = "node node-visited";
     }
     for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
       setTimeout(() => {
         const node = nodesInShortestPathOrder[i];
         if (node.isWeighted) {
           document.getElementById(`node-${node.row}-${node.col}`).className =
-          'node node-weighted-and-path';
-        } else {   
-          document.getElementById(`node-${node.row}-${node.col}`).className = style;
+            "node node-weighted-and-path";
+        } else {
+          document.getElementById(`node-${node.row}-${node.col}`).className =
+            style;
         }
       }, animationSpeed * i);
     }
   }
 
   visualize() {
-    switch(algorithm) {
+    switch (algorithm) {
       case "Dijkstra's":
         this.visualizeDijkstra();
         break;
@@ -308,7 +338,7 @@ export default class Visualizer extends Component {
   visualizeDijkstra() {
     // Before running and animating dijkstra's, reset nodes and UI.
     this.reset();
-    const {grid} = this.state;
+    const { grid } = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
     const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
     const visitedNodesInOrder = dijkstras(grid, startNode, finishNode);
@@ -318,30 +348,35 @@ export default class Visualizer extends Component {
 
   visualizeAStar(heuristic) {
     this.reset();
-    const {grid} = this.state;
+    const { grid } = this.state;
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
     const finishNode = grid[FINISH_NODE_ROW][FINISH_NODE_COL];
-    const visitedNodesInOrder = dijkstras(grid, startNode, finishNode, heuristic);
+    const visitedNodesInOrder = dijkstras(
+      grid,
+      startNode,
+      finishNode,
+      heuristic
+    );
     const nodesInShortestPathOrder = getNodesInShortestPathOrder(finishNode);
     this.animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
   }
 
   visualizePrims() {
     this.reset();
-    const {grid} = this.state;
+    const { grid } = this.state;
     const edgesInOrder = prims(grid);
     this.animateMST(edgesInOrder);
   }
 
   visualizeKruscals() {
     this.reset();
-    const {grid} = this.state;
+    const { grid } = this.state;
     const edgesInOrder = kruscals(grid);
     this.animateMST(edgesInOrder);
   }
 
   startExists() {
-    const {grid} = this.state;
+    const { grid } = this.state;
     for (const row of grid) {
       for (const node of row) {
         if (node.isStart) {
@@ -352,27 +387,180 @@ export default class Visualizer extends Component {
     return false;
   }
 
+  handleModal() {
+    this.setState({ show: !this.state.show });
+  }
+
   render() {
-    const {grid, mouseIsPressed} = this.state;
+    const { grid, mouseIsPressed } = this.state;
     return (
       <>
         <Navbar bg="light" expand="lg">
           <Container>
-            <Button variant='light'>Info</Button>{' '}
-            <Button variant='light' onClick={() => this.clear()}>Clear</Button>{' '}
-            <Button variant='light' onClick={() => this.visualize()}>Visualize</Button>{' '}
-            <NavDropdown title='Algorithms'>
-                <NavDropdown.Item onClick={() => this.selectDijkstras()}>Dijkstra's</NavDropdown.Item>
-                <NavDropdown.Item onClick={() => this.selectAStarEuclidean()}>A* (Euclidean Heuristic)</NavDropdown.Item>
-                <NavDropdown.Item onClick={() => this.selectAStarManhattan()}>A* (Manhattan Heuristic)</NavDropdown.Item>
-                <NavDropdown.Item onClick={() => this.selectPrims()}>Prim's</NavDropdown.Item>
-                <NavDropdown.Item onClick={() => this.selectKruscals()}>Kruscal's</NavDropdown.Item>
+            <Button variant="light" onClick={() => this.handleModal()}>
+              Info
+            </Button>{" "}
+            <Modal
+              show={this.state.show}
+              onHide={() => this.handleModal()}
+              dialogClassName="custom-dialog"
+            >
+              <Modal.Header closeButton></Modal.Header>
+              <Modal.Body className="show-grid">
+                <Container>
+                  <Row>
+                    <Col>
+                      <div>
+                        <h2>Getting Started</h2>
+                        <br></br>
+                        <ol>
+                          <li>
+                            Select a graph algorithm from the <strong>Algorithms</strong> dropdown.
+                          </li>
+                          <li>
+                            For pathfinding algorithms, click and drag to add
+                            walls. Hold <strong>left shift</strong> and click to add weights.
+                            Click on walls or weights to remove them.
+                          </li>
+                          <li>
+                            For spanning algorithms, click to add vertices. Note
+                            for Prim's, the first vertex placed will be the start vertex.
+                          </li>
+                          <li>
+                            Choose an animation speed from the <strong>Speed</strong> dropdown.
+                          </li>
+                          <li>
+                            Click <strong>Visualize</strong> to run the algorithm on your graph.
+                            You may revisualize the algorithm by clicking <strong>Visualize</strong> again.
+                          </li>
+                          <li>
+                            Click <strong>Clear</strong> to remove all walls, weights, and
+                            vertices.
+                          </li>
+                        </ol>
+                      </div>
+                    </Col>
+                    <Col xs={9}>
+                      <div>
+                        <h2>Know Your Algorithms</h2>
+                        <br></br>
+                        <h4>Pathfinding</h4>
+                        <i>Note:</i> Walls are impassable. Adjacent nodes have an edge weight of 1. Weights add 1 to all edges incident to the weighted node. For example, passing through a weighted node adds 2 to the distance.
+                        <ul>
+                          <li>
+                            <strong>Dijkstra's:</strong> Finds the shortest path
+                            from the start node to every other node in the
+                            graph. Visits nodes in order of weighted distance
+                            from the start node. Halt when goal node is visited.
+                          </li>
+                          <li>
+                            <strong>A* (Euclidean Heuristic):</strong> A
+                            variation of Dijkstra's algorithm. Finds the
+                            shortest path from the start node to a particular
+                            goal node. Visitation order favors nodes with a
+                            shorter Euclidean (straight line) distance from the
+                            goal.
+                          </li>
+                          <li>
+                            <strong>A* (Manhattan Heuristic):</strong> A
+                            variation of Dijkstra's algorithm. Finds the
+                            shortest path from the start node to a particular
+                            goal node. Visitation order favors nodes with a
+                            shorter quad-directional (up-down-left-right) distance from the
+                            goal. The strongest pathfinding algorithm in this
+                            visualizer.
+                          </li>
+                        </ul>
+                        <h4>Spanning</h4>
+                        <i>Note:</i> The visualizer assumes the graph is <strong>complete</strong>, meaning there is an edge between every possible pair of vertices. Furthermore, the weight of this edge is equal to the distance between its two vertices.
+                        <ul>
+                          <li>
+                            <strong>Prim's:</strong> Finds a minimum spanning
+                            tree (lightest possible subset of edges that connects all 
+                            vertices of a graph together) by starting from
+                            a given start node, and successively connecting the
+                            closest vertex to the already-connected vertices.
+                          </li>
+                          <li>
+                            <strong>Kruscal's:</strong> Finds a minimum spanning
+                            tree by repeatedly selecting the lightest edge to be
+                            part of the tree, given that the edge does not
+                            introduce a cycle in the set of edges selected
+                            before.
+                          </li>
+                        </ul>
+                      </div>
+                    </Col>
+                  </Row>
+                  <br></br>
+                  <Row>
+                    <Col className="d-flex justify-content-center">
+                      <img src={start} alt="start" height="30" width="30" />
+                      &nbsp;Start
+                    </Col>
+                    <Col className="d-flex justify-content-center">
+                      <img src={wall} alt="wall" height="30" width="30" />
+                      &nbsp;Wall/Vertex
+                    </Col>
+                    <Col className="d-flex justify-content-center">
+                      <img src={visited} alt="visited" height="30" width="30" />
+                      &nbsp;Visited/Edge
+                    </Col>
+                  </Row>
+                  <br></br>
+                  <Row>
+                    <Col className="d-flex justify-content-center">
+                      <img src={end} alt="end" height="30" width="30" />
+                      &nbsp;End
+                    </Col>
+                    <Col className="d-flex justify-content-center">
+                      <img src={weight} alt="weight" height="30" width="30" />
+                      &nbsp;Weight
+                    </Col>
+                    <Col className="d-flex justify-content-center">
+                      <img src={path} alt="path" height="30" width="30" />
+                      &nbsp;Shortest Path
+                    </Col>
+                  </Row>
+                </Container>
+              </Modal.Body>
+            </Modal>
+            <Button variant="light" onClick={() => this.clear()}>
+              Clear
+            </Button>{" "}
+            <Button variant="light" onClick={() => this.visualize()}>
+              Visualize
+            </Button>{" "}
+            <NavDropdown title="Algorithms">
+              <NavDropdown.Item onClick={() => this.selectDijkstras()}>
+                Dijkstra's
+              </NavDropdown.Item>
+              <NavDropdown.Item onClick={() => this.selectAStarEuclidean()}>
+                A* (Euclidean Heuristic)
+              </NavDropdown.Item>
+              <NavDropdown.Item onClick={() => this.selectAStarManhattan()}>
+                A* (Manhattan Heuristic)
+              </NavDropdown.Item>
+              <NavDropdown.Item onClick={() => this.selectPrims()}>
+                Prim's
+              </NavDropdown.Item>
+              <NavDropdown.Item onClick={() => this.selectKruscals()}>
+                Kruscal's
+              </NavDropdown.Item>
             </NavDropdown>
-            <NavDropdown title='Speed'>
-                <NavDropdown.Item onClick={() => this.selectExtraSlowSpeed()}>Extra Slow</NavDropdown.Item>
-                <NavDropdown.Item onClick={() => this.selectSlowSpeed()}>Slow</NavDropdown.Item>
-                <NavDropdown.Item onClick={() => this.selectNormalSpeed()}>Normal</NavDropdown.Item>
-                <NavDropdown.Item onClick={() => this.selectFastSpeed()}>Fast</NavDropdown.Item>
+            <NavDropdown title="Speed">
+              <NavDropdown.Item onClick={() => this.selectExtraSlowSpeed()}>
+                Extra Slow
+              </NavDropdown.Item>
+              <NavDropdown.Item onClick={() => this.selectSlowSpeed()}>
+                Slow
+              </NavDropdown.Item>
+              <NavDropdown.Item onClick={() => this.selectNormalSpeed()}>
+                Normal
+              </NavDropdown.Item>
+              <NavDropdown.Item onClick={() => this.selectFastSpeed()}>
+                Fast
+              </NavDropdown.Item>
             </NavDropdown>
           </Container>
         </Navbar>
@@ -381,7 +569,15 @@ export default class Visualizer extends Component {
             return (
               <div key={rowIdx}>
                 {row.map((node, nodeIdx) => {
-                  const {row, col, isFinish, isStart, isWall, isWeighted, isVertex} = node;
+                  const {
+                    row,
+                    col,
+                    isFinish,
+                    isStart,
+                    isWall,
+                    isWeighted,
+                    isVertex,
+                  } = node;
                   return (
                     <Node
                       key={nodeIdx}
@@ -397,7 +593,8 @@ export default class Visualizer extends Component {
                         this.handleMouseEnter(row, col)
                       }
                       onMouseUp={() => this.handleMouseUp()}
-                      row={row}></Node>
+                      row={row}
+                    ></Node>
                   );
                 })}
               </div>

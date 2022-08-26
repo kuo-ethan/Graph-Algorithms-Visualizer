@@ -1,3 +1,17 @@
 .grid {
   margin: 50px 0 0;
 }
+
+.custom-dialog {
+  max-width: none!important
+}
+
+/*
+li:not(:last-child) {
+  margin-bottom: 20px;
+}
+*/
+
+h2 {
+  text-align:center;
+}
