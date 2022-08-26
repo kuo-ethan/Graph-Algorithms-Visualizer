@@ -7,7 +7,8 @@ This project was forked from Clément Mihailescu's pathfinding visualizer tutori
 # Relevant Files
 The following files can be found in the `src` directory.
 - `classes/priority_queue.js`: Javascript file containing class definition for a Priority Queue. Implemented as a min-heap and uses dynamic arrays. Used by pathfinding algorithms and Prim's algorithm.
-- `algorithms`: Javascript files containing logic for Dijkstra's, A*, Prim's, and Kruscal's algorithms. `algorithms/kruscals.js` also contains logic for a Weighted Quick Union data structure with path compression.
+- `algorithms`: Javascript files containing logic for Dijkstra's, A*, Prim's, and Kruscal's algorithms. 
+- `algorithms/kruscals.js` also contains logic for a Weighted Quick Union data structure with path compression.
 - `Visualizer/Visualizer.jsx`: Javascript file for the Graph Algorithms Visualizer.
 - `Visualizer/Node/Node.css`: CSS file containing most styles and animations used in the visualizer.
 
