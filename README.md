@@ -1,6 +1,6 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 # Graph Algorithms Visualizer
-This application visualizes graph algorithms that solve the problems of pathfinding (finding the shortest path between two nodes) and spanning (finding the cheapest network of edges that connects vertices together). The visualizer is interactive and enables users to create their own graphs and run various algorithms on them. The visualizer features Dijkstra's, A* (with Euclidean and Manhattan heuristics), Prim's, and Kruskal's algorithm. 
+This web application visualizes graph algorithms that solve the problems of pathfinding (finding the shortest path between two nodes) and spanning (finding the cheapest network of edges that connects vertices together). The visualizer is interactive and enables users to create their own graphs and run various algorithms on them. The visualizer features Dijkstra's, A* (with Euclidean and Manhattan heuristics), Prim's, and Kruskal's algorithm. 
 
 This project was forked from Clément Mihailescu's pathfinding visualizer tutorial (https://github.com/clementmihailescu/Pathfinding-Visualizer-Tutorial) and heavily expanded on to include fresher animations, efficient data structures, and new algorithms.
 
