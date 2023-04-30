@@ -1,4 +1,6 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Usage
+Visit [here](http://ethankuo.me/graph-algorithms-visualizer-public/) to visit my visualizer!
+
 # Graph Algorithms Visualizer
 This web application visualizes graph algorithms that solve the problems of pathfinding (finding the shortest path between two nodes) and spanning (finding the cheapest network of edges that connects vertices together). The visualizer is interactive and enables users to create their own graphs and run various algorithms on them. The visualizer features Dijkstra's, A* (with Euclidean and Manhattan heuristics), Prim's, and Kruskal's algorithm. 
 
@@ -12,17 +14,6 @@ The following files can be found in the `src` directory.
 - `Visualizer/Visualizer.jsx`: Javascript file for the Graph Algorithms Visualizer.
 - `Visualizer/Node/Node.css`: CSS file containing most styles and animations used in the visualizer.
 
-# Usage
 
-1. Click the green "Code" button and clone the repository onto your local computer.
-2. In the project directory, you can run:
-
-### `npm start`
-
-If this fails, please run...
-
-### `npm install react-scripts`
-
-...and try again.
 
 Thank you for visiting my graph algorithms visualizer!
