@@ -1,5 +1,5 @@
 # Usage
-Visit [here](http://ethankuo.me/graph-algorithms-visualizer-public/) to visit my visualizer!
+Visit my visualizer [here](http://ethankuo.me/graph-algorithms-visualizer-public/)!
 
 # Graph Algorithms Visualizer
 This web application visualizes graph algorithms that solve the problems of pathfinding (finding the shortest path between two nodes) and spanning (finding the cheapest network of edges that connects vertices together). The visualizer is interactive and enables users to create their own graphs and run various algorithms on them. The visualizer features Dijkstra's, A* (with Euclidean and Manhattan heuristics), Prim's, and Kruskal's algorithm. 
